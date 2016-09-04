@@ -1,0 +1,6 @@
+pillerimies
+*.slo
+*.lo
+*.o
+*.gch
+*~
