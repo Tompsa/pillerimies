@@ -77,6 +77,8 @@ private:
 		void								addPills();
 		sf::FloatRect						getViewBounds() const;
 		sf::FloatRect						getBattlefieldBounds() const;
+		void								checkCharacterDirections();
+		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction);
         
         void                                updateTexts();
 
@@ -129,6 +131,7 @@ private:
         
         TextNode*                           _scoreDisplay;
         TextNode*                           _livesDisplay;
+        TextNode*                           _debugDisplay;
 };
 
 #endif //WORLD_H

@@ -27,6 +27,7 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
     , _activeGhosts()
     , _scoreDisplay(nullptr)
     , _livesDisplay(nullptr)
+    , _debugDisplay(nullptr)
 {
 	_spawnPosition = getPosFromNode(1,1);
 	loadTextures();
@@ -40,6 +41,11 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
 	_livesDisplay = livesDisplay.get();
 	_sceneLayers[ObjectLayer]->attachChild(std::move(livesDisplay));
 	
+	std::unique_ptr<TextNode> debugDisplay(new TextNode(fonts, ""));
+	_debugDisplay = debugDisplay.get();
+	_sceneLayers[ObjectLayer]->attachChild(std::move(debugDisplay));
+	
+	
     updateTexts();
 }
 
@@ -49,6 +55,7 @@ void World::update(sf::Time dt)
 	while (!_commandQueue.isEmpty())
 		_sceneGraph.onCommand(_commandQueue.pop(), dt);
 		
+	checkCharacterDirections();
 
 	// Collision detection and response (may destroy entities)
 	//handleCollisions();
@@ -345,7 +352,21 @@ void World::updateTexts()
     
     _livesDisplay->setString("Lives: " + toString(_playerLives));
     _livesDisplay->setPosition(_worldView.getSize().x / 2.f, 500.f);
+    
+	float xpos = _pacman->getPosition().x;
+	float ypos = _pacman->getPosition().y;
+	
+	float xdir = _pacman->getDirection().x;
+	float ydir = _pacman->getDirection().y;
+    
+    _debugDisplay->setString("X-pos " + toString(xpos) + 
+					"\nY-pos " + toString(ypos)+ 
+					"\nX-direction " + toString(xdir) + 		
+					"\nY-direction " + toString(ydir)
+					);
+    _debugDisplay->setPosition(_worldView.getSize().x / 2.f, 300.f);
 }
+
 
 bool World::loadMap(const std::string& path)
 {
@@ -361,3 +382,30 @@ bool World::loadMap(const std::string& path)
 		}
 		return true;
 }
+
+void World::checkCharacterDirections()
+{
+	if(checkDirection(_pacman->getPosition(), _pacman->getDirection()))
+		_pacman->setValidDirection(true);
+	else
+		_pacman->setValidDirection(false);
+		
+	if(checkDirection(_pacman->getPosition(), _pacman->getNextDirection()))
+		_pacman->setValidNextDirection(true);
+	else
+		_pacman->setValidNextDirection(false);
+	
+}
+
+bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
+	{
+		sf::Vector2i mapNodePos(position.x / 8, position.y / 8);
+		
+		sf::Vector2i intDirection(direction.x, direction.y);
+		
+		sf::Vector2i var = mapNodePos + intDirection;
+		
+		if(_map[var.x][var.y] == Wall)
+			return false;
+		return true;
+	} 

@@ -166,6 +166,11 @@ float length(sf::Vector2f vector)
 	return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 }
 
+float dot(sf::Vector2f vector1, sf::Vector2f vector2)
+{
+	return vector1.x * vector2.x + vector1.y * vector2.y; 
+}
+
 sf::Vector2f unitVector(sf::Vector2f vector)
 {
 	assert(vector != sf::Vector2f(0.f, 0.f));

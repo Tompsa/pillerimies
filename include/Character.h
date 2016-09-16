@@ -36,18 +36,27 @@ class Character : public Entity
 			virtual unsigned int	getCategory() const;
 			virtual sf::FloatRect 	getBoundingRect() const;
 			float 					getMaxSpeed() const;
-			void					setNextDirection(Direction var);
+			void					setDirection(sf::Vector2f var);
+			sf::Vector2f			getDirection();
+			void					setNextDirection(sf::Vector2f var);
+			sf::Vector2f			getNextDirection();
+			void					setValidDirection(bool var);
+			void					setValidNextDirection(bool var);
 			
 	private:
 			virtual void			drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const;
 			virtual void 			updateCurrent(sf::Time dt, CommandQueue& commands);
+			bool					moveTowardsPoint(sf::Vector2f goal, sf::Time dt);
 		
 	private:
 			Type 					_type;
 			int						_status;
 			sf::Sprite				_sprite;
-			Direction				_direction;
-			Direction				_nextDirection;
+			sf::Vector2f			_direction;
+			sf::Vector2f			_nextDirection;
+			sf::Vector2f			_target;
+			bool					_validDirection;
+			bool					_validNextDirection;
 };
 
 

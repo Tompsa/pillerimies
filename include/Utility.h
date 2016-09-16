@@ -35,6 +35,7 @@ int				randomInt(int exclusiveMax);
 // Vector operations
 float			length(sf::Vector2f vector);
 sf::Vector2f	unitVector(sf::Vector2f vector);
+float 			dot(sf::Vector2f vector1, sf::Vector2f vector2);
 
 // Node operations
 sf::Vector2f 	getPosFromNode(int x, int y);

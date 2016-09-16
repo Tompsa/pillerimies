@@ -4,6 +4,7 @@
 #include "CommandQueue.h"
 #include "ResourceHolder.h"
 
+
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 
@@ -19,8 +20,9 @@ Character::Character(Type type, const TextureHolder& textures)
 , _type(type)
 , _status(0)
 , _sprite(textures.get(Table[type].texture), Table[type].textureRect)
-, _direction()
-, _nextDirection()
+, _direction(0.f, 0.f)
+, _nextDirection(0.f, 0.f)
+, _target(0.f, 0.f)
 {
 	centerOrigin(_sprite);
 }
@@ -32,6 +34,23 @@ void Character::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) c
 
 void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 {
+
+	if(_target == sf::Vector2f(0.f, 0.f))
+	{
+		if(_validDirection)
+			_target = getPosition() + _direction * 8.f;
+		else
+			_direction = _nextDirection;
+	}
+	else
+	{
+		if(moveTowardsPoint(_target, dt)){
+			_target = sf::Vector2f(0.f, 0.f);
+			if(_validNextDirection)
+				_direction = _nextDirection;
+		}
+	}
+
 	Entity::updateCurrent(dt, commands);
 }
 
@@ -53,7 +72,47 @@ float Character::getMaxSpeed() const
 	return Table[_type].speed;
 }
 
-void Character::setNextDirection(Direction var)
+void Character::setDirection(sf::Vector2f var)
+{
+	_direction = var;
+}
+
+sf::Vector2f Character::getDirection()
+{
+	return _direction;
+}
+
+void Character::setNextDirection(sf::Vector2f var)
 {
 	_nextDirection = var;
+}
+
+sf::Vector2f Character::getNextDirection()
+{
+	return _nextDirection;
+}
+
+bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
+{
+	if(getPosition() == goal)
+		return true;
+		
+	sf::Vector2f direction = unitVector(goal - getPosition());
+	
+	move(direction * 50.f * dt.asSeconds());
+	
+	if( abs( dot(direction, unitVector(goal - getPosition())) +1 ) < 0.1f )
+		setPosition(goal);
+		
+	return getPosition() == goal;
+}
+
+void Character::setValidDirection(bool var)
+{
+	_validDirection = var;
+}
+
+void Character::setValidNextDirection(bool var)
+{
+	_validNextDirection = var;
 }

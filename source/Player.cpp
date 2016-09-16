@@ -105,15 +105,15 @@ Player::MissionStatus Player::getMissionStatus() const
 
 void Player::initializeActions()
 {
-    _actionBinding[TurnLeft].action = derivedAction<Character>(PacmanMover(-1, 0));
-    _actionBinding[TurnRight].action = derivedAction<Character>(PacmanMover(+1, 0));
-    _actionBinding[TurnUp].action = derivedAction<Character>(PacmanMover(0, -1));
-    _actionBinding[TurnDown].action = derivedAction<Character>(PacmanMover(0, +1));
+    //_actionBinding[TurnLeft].action = derivedAction<Character>(PacmanMover(-1, 0));
+    //_actionBinding[TurnRight].action = derivedAction<Character>(PacmanMover(+1, 0));
+    //_actionBinding[TurnUp].action = derivedAction<Character>(PacmanMover(0, -1));
+    //_actionBinding[TurnDown].action = derivedAction<Character>(PacmanMover(0, +1));
     
-    //_actionBinding[TurnLeft].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(); });
-    //_actionBinding[TurnRight].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(); });
-    //_actionBinding[TurnUp].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(); });
-    //_actionBinding[TurnDown].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(); });
+    _actionBinding[TurnLeft].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(-1,0)); });
+    _actionBinding[TurnRight].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(+1,0)); });
+    _actionBinding[TurnUp].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(0,-1)); });
+    _actionBinding[TurnDown].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(0,1)); });
    
 }
 
