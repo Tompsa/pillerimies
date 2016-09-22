@@ -11,7 +11,7 @@
 #include <functional>
 
 
-//class Pacman;
+class Character;
 
 struct CharacterData
 {
@@ -21,6 +21,14 @@ struct CharacterData
 	sf::IntRect						textureRect;
 };
 
+struct PickupData
+{
+	std::function<void(Character&)>	action;
+	Textures::ID					texture;
+	sf::IntRect						textureRect;
+};
+
 std::vector<CharacterData> initializeCharacterData();
+std::vector<PickupData> initializePickupData();
 
 #endif // DATATABLES_H

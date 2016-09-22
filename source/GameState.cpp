@@ -5,6 +5,7 @@ GameState::GameState(StateStack& stack, Context context)
 : State(stack, context)
 , _world(*context.window, *context.fonts)
 , _player(*context.player)
+, _ai(*context.ai)
 {
 	_player.setMissionStatus(Player::MissionRunning);
 }
@@ -31,6 +32,7 @@ bool GameState::update(sf::Time dt)
 
 	CommandQueue& commands = _world.getCommandQueue();
 	_player.handleRealtimeInput(commands);
+	_ai.controlGhosts(commands);
 
 	return true;
 }

@@ -31,6 +31,14 @@ class Character : public Entity
 			};
 			
 	public:
+			enum Status
+			{
+				Regular,
+				Super,
+				Scared,
+			};
+			
+	public:
 			Character(Type type, const TextureHolder& textures);
 			
 			virtual unsigned int	getCategory() const;
@@ -42,6 +50,8 @@ class Character : public Entity
 			sf::Vector2f			getNextDirection();
 			void					setValidDirection(bool var);
 			void					setValidNextDirection(bool var);
+			void 					collectPill();
+			void					setSuperMode(bool var);
 			
 	private:
 			virtual void			drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -50,7 +60,7 @@ class Character : public Entity
 		
 	private:
 			Type 					_type;
-			int						_status;
+			Status					_status;
 			sf::Sprite				_sprite;
 			sf::Vector2f			_direction;
 			sf::Vector2f			_nextDirection;

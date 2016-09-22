@@ -4,6 +4,7 @@
 #include "ResourceHolder.h"
 #include "ResourceIdentifiers.h"
 #include "Player.h"
+#include "CharacterAI.h"
 #include "StateStack.h"
 
 #include <SFML/System/Time.hpp>
@@ -34,6 +35,7 @@ class Application
 		TextureHolder			_textures;
 	  	FontHolder				_fonts;
 		Player					_player;
+		CharacterAI				_ai;
 
 		StateStack				_stateStack;
 

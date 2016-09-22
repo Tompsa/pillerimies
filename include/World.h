@@ -34,12 +34,24 @@ class World : private sf::NonCopyable
 		bool 								hasAlivePlayer() const;
 
 private:
+		//enum NodeType
+		//{
+			//Pill = 1,
+			//SuperPill,
+			//Wall,			
+			//GhostSpawn,
+		//};
+		
 		enum NodeType
 		{
-			Pill = 1,
-			SuperPill,
-			Wall,			
+			Wall,
+			Pill,
+			Empty,
+			SuperPill,					
 			GhostSpawn,
+			LeftTunnel,
+			RightTunnel,
+			Gate,
 		};
 
 private: 
@@ -76,7 +88,6 @@ private:
 		void 								addGhosts();
 		void								addPills();
 		sf::FloatRect						getViewBounds() const;
-		sf::FloatRect						getBattlefieldBounds() const;
 		void								checkCharacterDirections();
 		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction);
         
@@ -87,28 +98,11 @@ private:
 		enum Layer
 		{
 			Background,
-			ObjectLayer,
+			MazeLayer,
+			EntityLayer,
 			LayerCount
 		};
 
-		struct SpawnPoint 
-		{
-			SpawnPoint(Character::Type type, float x, float y)
-			: type(type)
-            , x(x)
-			, y(y)
-
-			{
-			}
-
-            Character::Type type;
-			float x;
-			float y;
-
-		};
-		
-
-		
 
 	private:
 		sf::RenderWindow&					_window;
@@ -126,8 +120,6 @@ private:
 		unsigned char 						_map[28][31];
         int                                 _playerScore;
         int                                 _playerLives;
-
-        std::vector<Character*>				_activeGhosts;
         
         TextNode*                           _scoreDisplay;
         TextNode*                           _livesDisplay;

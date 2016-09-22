@@ -18,11 +18,13 @@ namespace
 Character::Character(Type type, const TextureHolder& textures)
 : Entity(Table[type].hitpoints)
 , _type(type)
-, _status(0)
+, _status(Regular)
 , _sprite(textures.get(Table[type].texture), Table[type].textureRect)
 , _direction(0.f, 0.f)
 , _nextDirection(0.f, 0.f)
 , _target(0.f, 0.f)
+, _validDirection(false)
+, _validNextDirection(false)
 {
 	centerOrigin(_sprite);
 }
@@ -58,8 +60,16 @@ unsigned int Character::getCategory() const
 {
 	if(_type == Type::Pacman)
 		return Category::Pacman;
+	if(_type == Type::Blinky)
+		return Category::Blinky;
+	if(_type == Type::Pinky)
+		return Category::Pinky;
+	if(_type == Type::Inky)
+		return Category::Inky;
+	if(_type == Type::Clyde)
+		return Category::Clyde;
 	else
-		return Category::Ghost;
+		return Category::None;
 }
 
 sf::FloatRect Character::getBoundingRect() const
@@ -115,4 +125,17 @@ void Character::setValidDirection(bool var)
 void Character::setValidNextDirection(bool var)
 {
 	_validNextDirection = var;
+}
+
+void Character::collectPill()
+{
+	
+}
+
+void Character::setSuperMode(bool var)
+{
+	if(var)
+		_status = Super;
+	else
+		_status = Regular;
 }

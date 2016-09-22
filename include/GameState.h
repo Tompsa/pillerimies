@@ -4,6 +4,7 @@
 #include "State.h"
 #include "World.h"
 #include "Player.h"
+#include "CharacterAI.h"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -22,6 +23,7 @@ class GameState : public State
 	private:
 		World				_world;
 		Player&				_player;
+		CharacterAI&		_ai;
 };
 
 #endif // GAMESTATE_H

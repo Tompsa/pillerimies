@@ -1,5 +1,5 @@
 #include "World.h"
-#include "Character.h"
+#include "Pickup.h"
 #include "Foreach.h"
 #include "TextNode.h"
 #include "Utility.h"
@@ -24,27 +24,25 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
     , _pacman(nullptr)
     , _playerScore(0)
     , _playerLives(3)
-    , _activeGhosts()
     , _scoreDisplay(nullptr)
     , _livesDisplay(nullptr)
     , _debugDisplay(nullptr)
 {
-	_spawnPosition = getPosFromNode(1,1);
+	_spawnPosition = getPosFromNode(14,23);
 	loadTextures();
 	buildScene();
     
     std::unique_ptr<TextNode> scoreDisplay(new TextNode(fonts, ""));
 	_scoreDisplay = scoreDisplay.get();
-	_sceneLayers[ObjectLayer]->attachChild(std::move(scoreDisplay));
+	_sceneLayers[EntityLayer]->attachChild(std::move(scoreDisplay));
     
     std::unique_ptr<TextNode> livesDisplay(new TextNode(fonts, ""));
 	_livesDisplay = livesDisplay.get();
-	_sceneLayers[ObjectLayer]->attachChild(std::move(livesDisplay));
+	_sceneLayers[EntityLayer]->attachChild(std::move(livesDisplay));
 	
 	std::unique_ptr<TextNode> debugDisplay(new TextNode(fonts, ""));
 	_debugDisplay = debugDisplay.get();
-	_sceneLayers[ObjectLayer]->attachChild(std::move(debugDisplay));
-	
+	_sceneLayers[EntityLayer]->attachChild(std::move(debugDisplay));
 	
     updateTexts();
 }
@@ -54,11 +52,11 @@ void World::update(sf::Time dt)
 	// Forward commands to scene graph
 	while (!_commandQueue.isEmpty())
 		_sceneGraph.onCommand(_commandQueue.pop(), dt);
-		
+			
 	checkCharacterDirections();
-
+	
 	// Collision detection and response (may destroy entities)
-	//handleCollisions();
+	handleCollisions();
 
     // Remove all destroyed entities, create new ones
 	_sceneGraph.removeWrecks();
@@ -120,7 +118,19 @@ void World::handleCollisions()
 
 	FOREACH(SceneNode::Pair pair, collisionPairs)
 	{
-		
+		if (matchesCategories(pair, Category::Pacman, Category::Pickup))
+		{
+			auto& player = static_cast<Character&>(*pair.first);
+			auto& pickup = static_cast<Pickup&>(*pair.second);
+
+			// Apply pickup effect to player, destroy projectile
+			pickup.apply(player);
+			pickup.destroy();
+		}
+		else if (matchesCategories(pair, Category::Pacman, Category::Ghost))
+		{
+			
+		}	
 	}
 }
 
@@ -129,7 +139,7 @@ void World::buildScene()
 	// Initialize the different layers
 	for (std::size_t i = 0; i < LayerCount; ++i)
 	{
-		Category::Type category = (i == ObjectLayer) ? Category::Scene : Category::None;
+		Category::Type category = (i == EntityLayer) ? Category::Scene : Category::None;
 
 		SceneNode::Ptr layer(new SceneNode(category));
 		_sceneLayers[i] = layer.get();
@@ -138,28 +148,27 @@ void World::buildScene()
 	}
 	
 	// Load map 
-	loadMap("Level1.txt");
+	//loadMap("Level1.txt");
+	loadMap("level.txt");
+	
+	// Add level walls
+	addWalls();
+	
+	// Add pills
+	addPills();
 
 	// Add player's character
 	std::unique_ptr<Character> pacman(new Character(Character::Pacman, _textures));
 	_pacman = pacman.get();
 	_pacman->setPosition(_spawnPosition);
-	_sceneLayers[ObjectLayer]->attachChild(std::move(pacman));
-	
-	// Add level walls
-	addWalls();
+	_sceneLayers[EntityLayer]->attachChild(std::move(pacman));
 	
 	// Add ghosts
-	//addGhosts();
-	
-	// Add pills
-	addPills();
+	addGhosts();
 }
 
 void World::addWalls()
 {
-	//int Wall = 3 ;
-	
 	//Outer wall corners
 	if((_map[0][0]==Wall))
 		addWall(WallType::UpLeftCorner,sf::Vector2f(0, 0));
@@ -297,29 +306,30 @@ void World::addWall(WallType type, sf::Vector2f pos)
 	
 	std::unique_ptr<SpriteNode> wallSprite(new SpriteNode(wallTexture, rect));
 	wallSprite->setPosition(pos);
-	_sceneLayers[ObjectLayer]->attachChild(std::move(wallSprite));
+	_sceneLayers[MazeLayer]->attachChild(std::move(wallSprite));
 }
-/*
+
 void World::addGhosts()
 {
-	
+	for(int type = Character::Type::Blinky; type < Character::Type::TypeCount; type++)
+	{
+		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures));
+		ghost->setPosition(getPosFromNode(9*type,11));
+		_sceneLayers[EntityLayer]->attachChild(std::move(ghost));
+	}
 }
-*/
+
 
 void World::addPills()
 {
-	sf::Texture& pillTexture = _textures.get(Textures::Entities);
-	
 	for(int x=0;x<28;++x)for(int y=0;y<31;++y)
 	{
-		if(_map[x][y] == 1)
+		if(_map[x][y] == Pill)
 		{
-			std::unique_ptr<SpriteNode> pillSprite(new SpriteNode(pillTexture, sf::IntRect(11, 11, 2, 2)));
-			pillSprite->centerSprite();
-			pillSprite->setPosition(8*x + 4 , 8*y + 4);
-			_sceneLayers[ObjectLayer]->attachChild(std::move(pillSprite));
-		}
-		
+			std::unique_ptr<Pickup> pill(new Pickup(Pickup::Pill, _textures));
+			pill->setPosition(8*x + 4 , 8*y + 4);
+			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
+		}		
 	}
 }
 
@@ -333,16 +343,6 @@ void World::adaptPlayerPosition()
 sf::FloatRect World::getViewBounds() const
 {
 	return sf::FloatRect(_worldView.getCenter() - _worldView.getSize() / 2.f, _worldView.getSize());
-}
-
-sf::FloatRect World::getBattlefieldBounds() const
-{
-	// Return view bounds + some area at top
-	sf::FloatRect bounds = getViewBounds();
-	bounds.top -= 100.f;
-	bounds.height += 100.f;
-
-	return bounds;
 }
 
 void World::updateTexts()
@@ -385,16 +385,24 @@ bool World::loadMap(const std::string& path)
 
 void World::checkCharacterDirections()
 {
-	if(checkDirection(_pacman->getPosition(), _pacman->getDirection()))
-		_pacman->setValidDirection(true);
-	else
-		_pacman->setValidDirection(false);
+	Command charCollector;
+	charCollector.category = Category::Character;
+	charCollector.action = derivedAction<Character>([this] (Character& character, sf::Time)
+	{
+			// See if current direction is valid and set flag accordingly
+			if(checkDirection(character.getPosition(), character.getDirection()))
+				character.setValidDirection(true);
+			else
+				character.setValidDirection(false);
+			
+			// See if next direction is valid and set flag accordingly
+			if(checkDirection(character.getPosition(), character.getNextDirection()))
+				character.setValidNextDirection(true);
+			else
+				character.setValidNextDirection(false);
+	});	
 		
-	if(checkDirection(_pacman->getPosition(), _pacman->getNextDirection()))
-		_pacman->setValidNextDirection(true);
-	else
-		_pacman->setValidNextDirection(false);
-	
+	_commandQueue.push(charCollector);
 }
 
 bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
