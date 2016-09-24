@@ -36,6 +36,7 @@ class Character : public Entity
 				Regular,
 				Super,
 				Scared,
+				Eaten,
 			};
 			
 	public:
@@ -45,13 +46,15 @@ class Character : public Entity
 			virtual sf::FloatRect 	getBoundingRect() const;
 			float 					getMaxSpeed() const;
 			void					setDirection(sf::Vector2f var);
-			sf::Vector2f			getDirection();
+			sf::Vector2f			getDirection() const;
 			void					setNextDirection(sf::Vector2f var);
-			sf::Vector2f			getNextDirection();
+			sf::Vector2f			getNextDirection() const;
 			void					setValidDirection(bool var);
 			void					setValidNextDirection(bool var);
 			void 					collectPill();
-			void					setSuperMode(bool var);
+			void					setStatus(Status var);
+			Status					getStatus() const;
+			void					resetCharacter();
 			
 	private:
 			virtual void			drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const;

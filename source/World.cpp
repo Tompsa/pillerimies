@@ -114,38 +114,49 @@ bool matchesCategories(SceneNode::Pair& colliders, Category::Type type1, Categor
 
 void World::handleCollisions()
 {
-	
 	for (std::vector<Pickup*>::iterator it = _remainingPills.begin(); it != _remainingPills.end();)
 	{
-		if (_pacman->getBoundingRect().intersects((*it)->getBoundingRect()))
+		if ( (_pacman->getPosition() == (*it)->getPosition()) )
 		{
-			(*it)->apply(*_pacman);
-			_playerScore += 10;
-			(*it)->destroy();
-			it = _remainingPills.erase(it);
+			if ((*it)->getType() == Pickup::Pill)
+			{
+				(*it)->apply(*_pacman);
+				_playerScore += 10;
+				(*it)->destroy();
+				it = _remainingPills.erase(it);
+			}
+			if ((*it)->getType() == Pickup::SuperPill)
+			{
+				(*it)->apply(*_pacman);
+				_playerScore += 50;
+				for (auto& ghost : _activeGhosts)
+					ghost->setStatus(Character::Scared);
+				(*it)->destroy();
+				it = _remainingPills.erase(it);
+			}
+			else
+			{ }
 		}
 		else
 			++it;
 	}
-	//std::set<SceneNode::Pair> collisionPairs;
-	//_sceneGraph.checkSceneCollision(_sceneGraph, collisionPairs);
-
-	//FOREACH(SceneNode::Pair pair, collisionPairs)
-	//{
-	//	if (matchesCategories(pair, Category::Pacman, Category::Pickup))
-	//	{
-	//		auto& player = static_cast<Character&>(*pair.first);
-	//		auto& pickup = static_cast<Pickup&>(*pair.second);
-
-	//		// Apply pickup effect to player, destroy projectile
-	//		pickup.apply(player);
-	//		pickup.destroy();
-	//	}
-	//	else if (matchesCategories(pair, Category::Pacman, Category::Ghost))
-	//	{
-	//		
-	//	}	
-	//}
+	for (std::vector<Character*>::iterator it = _activeGhosts.begin(); it != _activeGhosts.end(); ++it)
+	{
+		if ( (_pacman->getPosition() == (*it)->getPosition()) )
+		{	
+			if (_pacman->getStatus() == Character::Super && (*it)->getStatus() != Character::Eaten)
+			{
+				(*it)->setStatus(Character::Eaten);
+				_playerScore += 50;
+			}
+			if ((*it)->getStatus() == Character::Regular)
+			{
+				_playerLives -= 1;
+				_pacman->resetCharacter();
+				_pacman->setPosition(_spawnPosition);
+			}
+		}
+	}
 }
 
 void World::buildScene()
@@ -345,8 +356,14 @@ void World::addPills()
 			pill->setPosition(8*x + 4 , 8*y + 4);
 			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
-
 		}		
+		if (_map[x][y] == SuperPill)
+		{
+			std::unique_ptr<Pickup> pill(new Pickup(Pickup::SuperPill, _textures));
+			pill->setPosition(8 * x + 4, 8 * y + 4);
+			_remainingPills.push_back(pill.get());
+			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
+		}
 	}
 }
 
@@ -369,11 +386,12 @@ void World::updateTexts()
 	
 	float xdir = _pacman->getDirection().x;
 	float ydir = _pacman->getDirection().y;
-    
+   
     _debugDisplay->setString("X-pos " + toString(xpos) + 
 					"\nY-pos " + toString(ypos)+ 
 					"\nX-direction " + toString(xdir) + 		
-					"\nY-direction " + toString(ydir)
+					"\nY-direction " + toString(ydir) +
+					"superia " + toString(_pacman->getStatus() == Character::Super)
 					);
     _debugDisplay->setPosition(_worldView.getSize().x / 2.f, 300.f);
 }

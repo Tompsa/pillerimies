@@ -25,6 +25,7 @@ class Pickup : public Entity
 		
 		virtual unsigned int	getCategory() const;
 		virtual sf::FloatRect	getBoundingRect() const;
+		Type					getType() const;
 		
 		void 					apply(Character& pacman) const;
 

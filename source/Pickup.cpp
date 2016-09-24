@@ -30,6 +30,11 @@ sf::FloatRect Pickup::getBoundingRect() const
 	return getWorldTransform().transformRect(_sprite.getGlobalBounds());
 }
 
+Pickup::Type Pickup::getType() const
+{
+	return _type;
+}
+
 void Pickup::apply(Character& player) const
 {
 	Table[_type].action(player);

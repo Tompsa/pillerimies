@@ -48,7 +48,7 @@ std::vector<PickupData> initializePickupData()
 	data[Pickup::Pill].textureRect = sf::IntRect(8, 8, 8, 8);
 	
 	//data[Pickup::SuperPill].action = [] (Character& a) { a.setSuperMode(); };
-	data[Pickup::SuperPill].action = std::bind(&Character::setSuperMode, _1, true);
+	data[Pickup::SuperPill].action = std::bind(&Character::setStatus, _1, Character::Status::Super);
 	data[Pickup::SuperPill].texture = Textures::Entities;
 	data[Pickup::SuperPill].textureRect = sf::IntRect(8, 24, 8, 8);
 	

@@ -87,7 +87,7 @@ void Character::setDirection(sf::Vector2f var)
 	_direction = var;
 }
 
-sf::Vector2f Character::getDirection()
+sf::Vector2f Character::getDirection() const
 {
 	return _direction;
 }
@@ -97,7 +97,7 @@ void Character::setNextDirection(sf::Vector2f var)
 	_nextDirection = var;
 }
 
-sf::Vector2f Character::getNextDirection()
+sf::Vector2f Character::getNextDirection() const
 {
 	return _nextDirection;
 }
@@ -132,10 +132,21 @@ void Character::collectPill()
 	
 }
 
-void Character::setSuperMode(bool var)
+void Character::setStatus(Status var)
 {
-	if(var)
-		_status = Super;
-	else
-		_status = Regular;
+	_status = var;
+}
+
+Character::Status Character::getStatus() const
+{
+	return _status;
+}
+
+void Character::resetCharacter()
+{
+	_direction = sf::Vector2f(0.f, 0.f);
+	_nextDirection = sf::Vector2f(0.f, 0.f);
+	_validDirection = false;
+	_validNextDirection = false;
+	_target = sf::Vector2f(0.f, 0.f);
 }
