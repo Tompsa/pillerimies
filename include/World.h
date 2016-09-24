@@ -22,6 +22,8 @@ namespace sf
 	class RenderWindow;
 }
 
+class Pickup;
+
 class World : private sf::NonCopyable
 {
 	public:
@@ -77,7 +79,6 @@ private:
 
 	private:
 		void								loadTextures();
-		void								adaptPlayerPosition();
 		void								handleCollisions();
 		
 		bool								loadMap(const std::string& path);
@@ -120,6 +121,8 @@ private:
 		unsigned char 						_map[28][31];
         int                                 _playerScore;
         int                                 _playerLives;
+		std::vector<Character*>				_activeGhosts;
+		std::vector<Pickup*>				_remainingPills;
         
         TextNode*                           _scoreDisplay;
         TextNode*                           _livesDisplay;

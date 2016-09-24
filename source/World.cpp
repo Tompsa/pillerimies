@@ -24,6 +24,8 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
     , _pacman(nullptr)
     , _playerScore(0)
     , _playerLives(3)
+	, _remainingPills()
+	, _activeGhosts()
     , _scoreDisplay(nullptr)
     , _livesDisplay(nullptr)
     , _debugDisplay(nullptr)
@@ -63,7 +65,6 @@ void World::update(sf::Time dt)
     
 	// Regular update step, adapt position (correct if outside view)
 	_sceneGraph.update(dt, _commandQueue);
-	//adaptPlayerPosition();
     
     // Update score display
     updateTexts();
@@ -113,25 +114,38 @@ bool matchesCategories(SceneNode::Pair& colliders, Category::Type type1, Categor
 
 void World::handleCollisions()
 {
-	std::set<SceneNode::Pair> collisionPairs;
-	_sceneGraph.checkSceneCollision(_sceneGraph, collisionPairs);
-
-	FOREACH(SceneNode::Pair pair, collisionPairs)
+	
+	for (std::vector<Pickup*>::iterator it = _remainingPills.begin(); it != _remainingPills.end();)
 	{
-		if (matchesCategories(pair, Category::Pacman, Category::Pickup))
+		if (_pacman->getBoundingRect().intersects((*it)->getBoundingRect()))
 		{
-			auto& player = static_cast<Character&>(*pair.first);
-			auto& pickup = static_cast<Pickup&>(*pair.second);
-
-			// Apply pickup effect to player, destroy projectile
-			pickup.apply(player);
-			pickup.destroy();
+			(*it)->apply(*_pacman);
+			_playerScore += 10;
+			(*it)->destroy();
+			it = _remainingPills.erase(it);
 		}
-		else if (matchesCategories(pair, Category::Pacman, Category::Ghost))
-		{
-			
-		}	
+		else
+			++it;
 	}
+	//std::set<SceneNode::Pair> collisionPairs;
+	//_sceneGraph.checkSceneCollision(_sceneGraph, collisionPairs);
+
+	//FOREACH(SceneNode::Pair pair, collisionPairs)
+	//{
+	//	if (matchesCategories(pair, Category::Pacman, Category::Pickup))
+	//	{
+	//		auto& player = static_cast<Character&>(*pair.first);
+	//		auto& pickup = static_cast<Pickup&>(*pair.second);
+
+	//		// Apply pickup effect to player, destroy projectile
+	//		pickup.apply(player);
+	//		pickup.destroy();
+	//	}
+	//	else if (matchesCategories(pair, Category::Pacman, Category::Ghost))
+	//	{
+	//		
+	//	}	
+	//}
 }
 
 void World::buildScene()
@@ -314,6 +328,7 @@ void World::addGhosts()
 	for(int type = Character::Type::Blinky; type < Character::Type::TypeCount; type++)
 	{
 		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures));
+		_activeGhosts.push_back(ghost.get());
 		ghost->setPosition(getPosFromNode(9*type,11));
 		_sceneLayers[EntityLayer]->attachChild(std::move(ghost));
 	}
@@ -328,17 +343,13 @@ void World::addPills()
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::Pill, _textures));
 			pill->setPosition(8*x + 4 , 8*y + 4);
+			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
+
 		}		
 	}
 }
 
-void World::adaptPlayerPosition()
-{
-	// Keep player's position inside the screen bounds
-	sf::FloatRect viewBounds(_worldView.getCenter() - _worldView.getSize() / 2.f, _worldView.getSize());
-
-}
 
 sf::FloatRect World::getViewBounds() const
 {
