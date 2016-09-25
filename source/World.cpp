@@ -118,24 +118,19 @@ void World::handleCollisions()
 	{
 		if ( (_pacman->getPosition() == (*it)->getPosition()) )
 		{
+			(*it)->apply(*_pacman);
 			if ((*it)->getType() == Pickup::Pill)
 			{
-				(*it)->apply(*_pacman);
 				_playerScore += 10;
-				(*it)->destroy();
-				it = _remainingPills.erase(it);
 			}
 			if ((*it)->getType() == Pickup::SuperPill)
 			{
-				(*it)->apply(*_pacman);
 				_playerScore += 50;
 				for (auto& ghost : _activeGhosts)
 					ghost->setStatus(Character::Scared);
-				(*it)->destroy();
-				it = _remainingPills.erase(it);
 			}
-			else
-			{ }
+			(*it)->destroy();
+			it = _remainingPills.erase(it);
 		}
 		else
 			++it;
