@@ -9,6 +9,7 @@
 #include "CommandQueue.h"
 #include "Command.h"
 #include "TextNode.h"
+#include "Map.h"
 
 #include <SFML/System/NonCopyable.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -35,57 +36,11 @@ class World : private sf::NonCopyable
 
 		bool 								hasAlivePlayer() const;
 
-private:
-		//enum NodeType
-		//{
-			//Pill = 1,
-			//SuperPill,
-			//Wall,			
-			//GhostSpawn,
-		//};
-		
-		enum NodeType
-		{
-			Wall,
-			Pill,
-			Empty,
-			SuperPill,					
-			GhostSpawn,
-			LeftTunnel,
-			RightTunnel,
-			Gate,
-		};
-
-private: 
-		enum WallType
-		{
-			LeftVertical,
-			RightVertical,
-			UpHorizontal,
-			DownHorizontal,
-			UpLeftCorner,
-			UpRightCorner,
-			DownLeftCorner,
-			DownRightCorner,
-			SolidWallLeft,
-			SolidWallRight,
-			SolidWallUp,
-			SolidWallDown,
-			SolidCornerUpLeft,
-			SolidCornerUpRight,
-			SolidCornerDownLeft,
-			SolidCornerDownRight	
-		};
-
 	private:
 		void								loadTextures();
 		void								handleCollisions();
 		
-		bool								loadMap(const std::string& path);
-		
 		void								buildScene();
-		void								addWalls();
-		void 								addWall(World::WallType type, sf::Vector2f pos);
 		void 								addGhosts();
 		void								addPills();
 		sf::FloatRect						getViewBounds() const;
@@ -93,7 +48,6 @@ private:
 		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction);
         
         void                                updateTexts();
-
 
 	private:
 		enum Layer
@@ -103,7 +57,6 @@ private:
 			EntityLayer,
 			LayerCount
 		};
-
 
 	private:
 		sf::RenderWindow&					_window;
@@ -118,7 +71,7 @@ private:
 		sf::FloatRect						_worldBounds;
 		sf::Vector2f						_spawnPosition;
 		Character*							_pacman;
-		unsigned char 						_map[28][31];
+		Map									_map;
         int                                 _playerScore;
         int                                 _playerLives;
 		std::vector<Character*>				_activeGhosts;

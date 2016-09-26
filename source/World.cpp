@@ -29,6 +29,7 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
     , _scoreDisplay(nullptr)
     , _livesDisplay(nullptr)
     , _debugDisplay(nullptr)
+	, _map()
 {
 	_spawnPosition = getPosFromNode(14,23);
 	loadTextures();
@@ -168,11 +169,10 @@ void World::buildScene()
 	}
 	
 	// Load map 
-	//loadMap("Level1.txt");
-	loadMap("level.txt");
+	_map.loadMap("level.txt");
 	
 	// Add level walls
-	addWalls();
+	_map.addWalls(_textures, *_sceneLayers[MazeLayer]);
 	
 	// Add pills
 	addPills();
@@ -187,148 +187,6 @@ void World::buildScene()
 	addGhosts();
 }
 
-void World::addWalls()
-{
-	//Outer wall corners
-	if((_map[0][0]==Wall))
-		addWall(WallType::UpLeftCorner,sf::Vector2f(0, 0));
-	if((_map[27][0]==Wall))
-		addWall(WallType::UpRightCorner,sf::Vector2f(27*8, 0));
-	if((_map[0][30]==Wall))
-		addWall(WallType::DownLeftCorner,sf::Vector2f(0, 30*8));
-	if((_map[27][30]==Wall))
-		addWall(WallType::DownRightCorner,sf::Vector2f(27*8, 30*8));
-	
-	// Walls on the top and low
-	for(int x = 1; x < 27; ++x)
-	{		
-		if((_map[x][0]==Wall)&&(_map[x+1][0]==Wall))
-		{
-			addWall(WallType::UpHorizontal,sf::Vector2f(x*8, 0));
-		}
-		if((_map[x][30]==Wall)&&(_map[x+1][30]==Wall))
-		{
-			addWall(WallType::DownHorizontal,sf::Vector2f(x*8, 30*8));	
-		}
-	}
-	// Walls on the right and left
-	for(int y = 1; y < 30; ++y)
-	{
-		if((_map[0][y]==Wall)&&(_map[0][y+1]==Wall))
-		{
-			addWall(WallType::LeftVertical,sf::Vector2f(0, y*8));
-		}
-		if((_map[27][y]==Wall)&&(_map[27][y+1]==Wall))
-		{
-			addWall(WallType::RightVertical,sf::Vector2f(27*8, y*8));
-		}
-	}
-	for(int x=1;x<27;++x) for(int y=1;y<30;++y)
-	{
-		if(_map[x][y]==Wall)
-		{
-			// Inner walls
-			if(_map[x-1][y] == Wall && _map[x+1][y] == Wall && _map[x][y+1] == Wall && _map[x][y-1] != Wall)
-			{
-				addWall(WallType::SolidWallUp,sf::Vector2f(x*8, y*8));
-			}
-			if(_map[x-1][y] == Wall && _map[x+1][y] == Wall && _map[x][y+1] != Wall && _map[x][y-1] == Wall)
-			{
-				addWall(WallType::SolidWallDown,sf::Vector2f(x*8, y*8));
-			}
-			if(_map[x-1][y] != Wall && _map[x+1][y] == Wall && _map[x][y+1] == Wall && _map[x][y-1] == Wall)
-			{
-				addWall(WallType::SolidWallLeft,sf::Vector2f(x*8, y*8));
-			}
-			if(_map[x-1][y] == Wall && _map[x+1][y] != Wall && _map[x][y+1] == Wall && _map[x][y-1] == Wall)
-			{
-				addWall(WallType::SolidWallRight,sf::Vector2f(x*8, y*8));
-			}
-			
-			// Corners
-			if(_map[x-1][y] != Wall && _map[x+1][y] == Wall && _map[x][y+1] == Wall && _map[x][y-1] != Wall)
-			{
-				addWall(WallType::SolidCornerUpLeft,sf::Vector2f(x*8, y*8));
-			}
-			if(_map[x-1][y] == Wall && _map[x+1][y] != Wall && _map[x][y+1] == Wall && _map[x][y-1] != Wall)
-			{
-				addWall(WallType::SolidCornerUpRight,sf::Vector2f(x*8, y*8));
-			}
-			if(_map[x-1][y] != Wall && _map[x+1][y] == Wall && _map[x][y+1] != Wall && _map[x][y-1] == Wall)
-			{
-				addWall(WallType::SolidCornerDownLeft,sf::Vector2f(x*8, y*8));
-			}
-			if(_map[x-1][y] == Wall && _map[x+1][y] != Wall && _map[x][y+1] != Wall && _map[x][y-1] == Wall)
-			{
-				addWall(WallType::SolidCornerDownRight,sf::Vector2f(x*8, y*8));
-			}
-		}	
-	}
-
-}
-
-void World::addWall(WallType type, sf::Vector2f pos)
-{
-	sf::Texture& wallTexture = _textures.get(Textures::Entities);
-	sf::IntRect rect;
-	
-	switch(type)
-	{
-		case LeftVertical:
-			rect = sf::IntRect(0, 8, 8, 8);
-			break;
-		case RightVertical:
-			rect = sf::IntRect(27*8, 8, 8, 8);
-			break;
-		case UpHorizontal:
-			rect = sf::IntRect(8, 0, 8, 8);
-			break;
-		case DownHorizontal:
-			rect = sf::IntRect(8, 30*8, 8, 8);
-			break;
-		case UpLeftCorner:
-			rect = sf::IntRect(0, 0, 8, 8);
-			break;
-		case UpRightCorner:
-			rect = sf::IntRect(27*8, 0, 8, 8);
-			break;
-		case DownLeftCorner:
-			rect = sf::IntRect(0, 30*8, 8, 8);
-			break;
-		case DownRightCorner:
-			rect = sf::IntRect(27*8, 9*8, 8, 8);
-			break;
-		case SolidWallLeft:
-			rect = sf::IntRect(2*8, 3*8, 8, 8);
-			break;
-		case SolidWallRight:
-			rect = sf::IntRect(5*8, 3*8, 8, 8);
-			break;		
-		case SolidWallUp:
-			rect = sf::IntRect(3*8, 2*8, 8, 8);
-			break;
-		case SolidWallDown:
-			rect = sf::IntRect(3*8, 4*8, 8, 8);
-			break;
-		case SolidCornerUpLeft:
-			rect = sf::IntRect(2*8, 2*8, 8, 8);
-			break;
-		case SolidCornerUpRight:
-			rect = sf::IntRect(5*8, 2*8, 8, 8);
-			break;
-		case SolidCornerDownLeft:
-			rect = sf::IntRect(2*8, 4*8, 8, 8);
-			break;
-		case SolidCornerDownRight:
-			rect = sf::IntRect(5*8, 4*8, 8, 8);
-			break;
-	}
-	
-	std::unique_ptr<SpriteNode> wallSprite(new SpriteNode(wallTexture, rect));
-	wallSprite->setPosition(pos);
-	_sceneLayers[MazeLayer]->attachChild(std::move(wallSprite));
-}
-
 void World::addGhosts()
 {
 	for(int type = Character::Type::Blinky; type < Character::Type::TypeCount; type++)
@@ -340,19 +198,18 @@ void World::addGhosts()
 	}
 }
 
-
 void World::addPills()
 {
 	for(int x=0;x<28;++x)for(int y=0;y<31;++y)
 	{
-		if(_map[x][y] == Pill)
+		if(_map.isPillTile(x,y))
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::Pill, _textures));
 			pill->setPosition(8*x + 4 , 8*y + 4);
 			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
 		}		
-		if (_map[x][y] == SuperPill)
+		if (_map.isSuperPillTile(x,y))
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::SuperPill, _textures));
 			pill->setPosition(8 * x + 4, 8 * y + 4);
@@ -361,7 +218,6 @@ void World::addPills()
 		}
 	}
 }
-
 
 sf::FloatRect World::getViewBounds() const
 {
@@ -389,22 +245,6 @@ void World::updateTexts()
 					"superia " + toString(_pacman->getStatus() == Character::Super)
 					);
     _debugDisplay->setPosition(_worldView.getSize().x / 2.f, 300.f);
-}
-
-
-bool World::loadMap(const std::string& path)
-{
-		std::ifstream file(path.c_str());
-		if(!file.is_open()) return false;
-
-		for(int y=0;y<31;++y) for(int x=0;x<28;++x)
-		{
-			if(file.eof()) return false;
-			int current;
-			file>>current;
-			_map[x][y]=current;
-		}
-		return true;
 }
 
 void World::checkCharacterDirections()
@@ -436,8 +276,6 @@ bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
 		sf::Vector2i intDirection(direction.x, direction.y);
 		
 		sf::Vector2i var = mapNodePos + intDirection;
-		
-		if(_map[var.x][var.y] == Wall)
-			return false;
-		return true;
+
+		return _map.isEnterableTile(var);
 	} 
