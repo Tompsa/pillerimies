@@ -131,14 +131,6 @@ bool Map::isEnterableTile(sf::Vector2i pos) const
 		return false;
 }
 
-bool Map::isEnterableTile(int x, int y) const
-{
-	if (_map[x][y] != (Wall || Gate))
-		return true;
-	else
-		return false;
-}
-
 void Map::addWall(TextureHolder &textures, SceneNode &mazeLayer, WallType type, sf::Vector2f pos)
 {
 	sf::Texture& wallTexture = textures.get(Textures::Entities);

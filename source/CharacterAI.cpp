@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 
 using namespace std::placeholders;
@@ -30,5 +31,34 @@ void CharacterAI::initializeActions()
 
 void CharacterAI::controlGhosts(CommandQueue& commands)
 {
-	commands.push(_actionBinding[TurnRight]);
+	Command pacCommand;
+	pacCommand.category = Category::Pacman;
+	pacCommand.action = derivedAction<Character>([this](Character& a, sf::Time)
+	{
+		_pacTilePos = a.getPosition() / 8.f ;
+
+	});
+
+	Command ghostCommand;
+	ghostCommand.category = Category::Ghost;
+	ghostCommand.action = derivedAction<Character>([this](Character& a, sf::Time)
+	{
+		int shortestDistance = 1000;
+		sf::Vector2f newDir;
+
+			for (auto &dir : a.getValidDirections())
+			{
+				sf::Vector2f var = a.getPosition()/8.f + dir;
+				int dist = getManhattanDistance(_pacTilePos, var);
+				if (dist < shortestDistance)
+				{
+					shortestDistance = dist;
+					newDir = dir;
+				}
+			}
+			a.setNextDirection(newDir);
+	});
+
+	commands.push(pacCommand);
+	commands.push(ghostCommand);
 }

@@ -2,6 +2,7 @@
 #define CHARACTERAI_H
 
 #include "Command.h"
+#include <SFML\System\Vector2.hpp>
 
 #include <map>
 
@@ -28,6 +29,7 @@ private:
 	
 private:
 	std::map<Action, Command> _actionBinding;
+	sf::Vector2f _pacTilePos;
 };
 
 #endif //CHARACTERAI_H

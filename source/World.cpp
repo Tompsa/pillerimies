@@ -193,7 +193,7 @@ void World::addGhosts()
 	{
 		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures));
 		_activeGhosts.push_back(ghost.get());
-		ghost->setPosition(getPosFromNode(9*type,11));
+		ghost->setPosition(getPosFromNode(type+8,11));
 		_sceneLayers[EntityLayer]->attachChild(std::move(ghost));
 	}
 }
@@ -241,8 +241,7 @@ void World::updateTexts()
     _debugDisplay->setString("X-pos " + toString(xpos) + 
 					"\nY-pos " + toString(ypos)+ 
 					"\nX-direction " + toString(xdir) + 		
-					"\nY-direction " + toString(ydir) +
-					"superia " + toString(_pacman->getStatus() == Character::Super)
+					"\nY-direction " + toString(ydir)					
 					);
     _debugDisplay->setPosition(_worldView.getSize().x / 2.f, 300.f);
 }
@@ -253,17 +252,26 @@ void World::checkCharacterDirections()
 	charCollector.category = Category::Character;
 	charCollector.action = derivedAction<Character>([this] (Character& character, sf::Time)
 	{
-			// See if current direction is valid and set flag accordingly
-			if(checkDirection(character.getPosition(), character.getDirection()))
-				character.setValidDirection(true);
-			else
-				character.setValidDirection(false);
-			
-			// See if next direction is valid and set flag accordingly
-			if(checkDirection(character.getPosition(), character.getNextDirection()))
-				character.setValidNextDirection(true);
-			else
-				character.setValidNextDirection(false);
+			//// See if current direction is valid and set flag accordingly
+			//if(checkDirection(character.getPosition(), character.getDirection()))
+			//	character.setValidDirection(true);
+			//else
+			//	character.setValidDirection(false);
+			//
+			//// See if next direction is valid and set flag accordingly
+			//if(checkDirection(character.getPosition(), character.getNextDirection()))
+			//	character.setValidNextDirection(true);
+			//else
+			//	character.setValidNextDirection(false);
+		character.resetValidDirections();
+		if (checkDirection(character.getPosition(), sf::Vector2f(-1, 0)))
+			character.addValidDirection(sf::Vector2f(-1, 0));
+		if (checkDirection(character.getPosition(), sf::Vector2f(1, 0)))
+			character.addValidDirection(sf::Vector2f(1, 0));
+		if (checkDirection(character.getPosition(), sf::Vector2f(0, 1)))
+			character.addValidDirection(sf::Vector2f(0, 1));
+		if (checkDirection(character.getPosition(), sf::Vector2f(0, -1)))
+			character.addValidDirection(sf::Vector2f(0, -1));
 	});	
 		
 	_commandQueue.push(charCollector);

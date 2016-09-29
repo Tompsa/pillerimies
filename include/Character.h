@@ -49,8 +49,9 @@ class Character : public Entity
 			sf::Vector2f			getDirection() const;
 			void					setNextDirection(sf::Vector2f var);
 			sf::Vector2f			getNextDirection() const;
-			void					setValidDirection(bool var);
-			void					setValidNextDirection(bool var);
+			void					addValidDirection(sf::Vector2f var);
+			std::vector<sf::Vector2f>& getValidDirections();
+			void					resetValidDirections();
 			void 					collectPill();
 			void					setStatus(Status var);
 			Status					getStatus() const;
@@ -68,8 +69,7 @@ class Character : public Entity
 			sf::Vector2f			_direction;
 			sf::Vector2f			_nextDirection;
 			sf::Vector2f			_target;
-			bool					_validDirection;
-			bool					_validNextDirection;
+			std::vector<sf::Vector2f> _validDirections;
 };
 
 

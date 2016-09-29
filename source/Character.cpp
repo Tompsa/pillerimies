@@ -23,8 +23,6 @@ Character::Character(Type type, const TextureHolder& textures)
 , _direction(0.f, 0.f)
 , _nextDirection(0.f, 0.f)
 , _target(0.f, 0.f)
-, _validDirection(false)
-, _validNextDirection(false)
 {
 	centerOrigin(_sprite);
 }
@@ -39,7 +37,8 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 
 	if(_target == sf::Vector2f(0.f, 0.f))
 	{
-		if(_validDirection)
+		//if(_validDirection)
+		if (std::find(_validDirections.begin(),_validDirections.end(), _direction) != _validDirections.end())
 			_target = getPosition() + _direction * 8.f;
 		else
 			_direction = _nextDirection;
@@ -48,7 +47,8 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 	{
 		if(moveTowardsPoint(_target, dt)){
 			_target = sf::Vector2f(0.f, 0.f);
-			if(_validNextDirection)
+			//if(_validNextDirection)
+			if (std::find(_validDirections.begin(), _validDirections.end(), _nextDirection) != _validDirections.end())
 				_direction = _nextDirection;
 		}
 	}
@@ -102,6 +102,21 @@ sf::Vector2f Character::getNextDirection() const
 	return _nextDirection;
 }
 
+void Character::addValidDirection(sf::Vector2f var)
+{
+	_validDirections.push_back(var);
+}
+
+std::vector<sf::Vector2f>& Character::getValidDirections()
+{
+	return _validDirections;
+}
+
+void Character::resetValidDirections()
+{
+	_validDirections.clear();
+}
+
 bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 {
 	if(getPosition() == goal)
@@ -109,22 +124,12 @@ bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 		
 	sf::Vector2f direction = unitVector(goal - getPosition());
 	
-	move(direction * 50.f * dt.asSeconds());
+	move(direction * getMaxSpeed() * dt.asSeconds());
 	
 	if( abs( dot(direction, unitVector(goal - getPosition())) +1 ) < 0.1f )
 		setPosition(goal);
 		
 	return getPosition() == goal;
-}
-
-void Character::setValidDirection(bool var)
-{
-	_validDirection = var;
-}
-
-void Character::setValidNextDirection(bool var)
-{
-	_validNextDirection = var;
 }
 
 void Character::collectPill()
@@ -146,7 +151,5 @@ void Character::resetCharacter()
 {
 	_direction = sf::Vector2f(0.f, 0.f);
 	_nextDirection = sf::Vector2f(0.f, 0.f);
-	_validDirection = false;
-	_validNextDirection = false;
 	_target = sf::Vector2f(0.f, 0.f);
 }

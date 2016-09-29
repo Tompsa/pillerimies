@@ -181,3 +181,8 @@ sf::Vector2f getPosFromNode(int x, int y)
 {
 	return sf::Vector2f (x*8+4,y*8+4);
 }
+
+int getManhattanDistance(sf::Vector2f x, sf::Vector2f y)
+{
+	return abs(x.x - y.x) + abs(x.y - y.y);
+}
