@@ -18,7 +18,7 @@ namespace
 Character::Character(Type type, const TextureHolder& textures)
 : Entity(Table[type].hitpoints)
 , _type(type)
-, _status(0)
+, _status(Regular)
 , _sprite(textures.get(Table[type].texture), Table[type].textureRect)
 , _direction(0.f, 0.f)
 , _nextDirection(0.f, 0.f)
@@ -37,7 +37,8 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 
 	if(_target == sf::Vector2f(0.f, 0.f))
 	{
-		if(_validDirection)
+		//if(_validDirection)
+		if (std::find(_validDirections.begin(),_validDirections.end(), _direction) != _validDirections.end())
 			_target = getPosition() + _direction * 8.f;
 		else
 			_direction = _nextDirection;
@@ -46,7 +47,8 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 	{
 		if(moveTowardsPoint(_target, dt)){
 			_target = sf::Vector2f(0.f, 0.f);
-			if(_validNextDirection)
+			//if(_validNextDirection)
+			if (std::find(_validDirections.begin(), _validDirections.end(), _nextDirection) != _validDirections.end())
 				_direction = _nextDirection;
 		}
 	}
@@ -58,8 +60,16 @@ unsigned int Character::getCategory() const
 {
 	if(_type == Type::Pacman)
 		return Category::Pacman;
+	if(_type == Type::Blinky)
+		return Category::Blinky;
+	if(_type == Type::Pinky)
+		return Category::Pinky;
+	if(_type == Type::Inky)
+		return Category::Inky;
+	if(_type == Type::Clyde)
+		return Category::Clyde;
 	else
-		return Category::Ghost;
+		return Category::None;
 }
 
 sf::FloatRect Character::getBoundingRect() const
@@ -77,7 +87,7 @@ void Character::setDirection(sf::Vector2f var)
 	_direction = var;
 }
 
-sf::Vector2f Character::getDirection()
+sf::Vector2f Character::getDirection() const
 {
 	return _direction;
 }
@@ -87,9 +97,24 @@ void Character::setNextDirection(sf::Vector2f var)
 	_nextDirection = var;
 }
 
-sf::Vector2f Character::getNextDirection()
+sf::Vector2f Character::getNextDirection() const
 {
 	return _nextDirection;
+}
+
+void Character::addValidDirection(sf::Vector2f var)
+{
+	_validDirections.push_back(var);
+}
+
+std::vector<sf::Vector2f>& Character::getValidDirections()
+{
+	return _validDirections;
+}
+
+void Character::resetValidDirections()
+{
+	_validDirections.clear();
 }
 
 bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
@@ -99,7 +124,7 @@ bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 		
 	sf::Vector2f direction = unitVector(goal - getPosition());
 	
-	move(direction * 50.f * dt.asSeconds());
+	move(direction * getMaxSpeed() * dt.asSeconds());
 	
 	if( abs( dot(direction, unitVector(goal - getPosition())) +1 ) < 0.1f )
 		setPosition(goal);
@@ -107,12 +132,24 @@ bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 	return getPosition() == goal;
 }
 
-void Character::setValidDirection(bool var)
+void Character::collectPill()
 {
-	_validDirection = var;
+	
 }
 
-void Character::setValidNextDirection(bool var)
+void Character::setStatus(Status var)
 {
-	_validNextDirection = var;
+	_status = var;
+}
+
+Character::Status Character::getStatus() const
+{
+	return _status;
+}
+
+void Character::resetCharacter()
+{
+	_direction = sf::Vector2f(0.f, 0.f);
+	_nextDirection = sf::Vector2f(0.f, 0.f);
+	_target = sf::Vector2f(0.f, 0.f);
 }

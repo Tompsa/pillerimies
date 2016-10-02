@@ -17,6 +17,7 @@ namespace sf
 
 class StateStack;
 class Player;
+class CharacterAI;
 
 class State
 {
@@ -25,12 +26,13 @@ class State
 
 		struct Context
 		{
-								Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, Player& player);
+								Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, Player& player, CharacterAI& ai);
 
 			sf::RenderWindow*	window;
 			TextureHolder*		textures;
 			FontHolder*			fonts;
 			Player*				player;
+			CharacterAI* 		ai;
 		};
 
 

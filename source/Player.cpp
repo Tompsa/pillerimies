@@ -10,23 +10,6 @@
 
 using namespace std::placeholders;
 
-
-struct PacmanMover
-{
-	PacmanMover(float vx, float vy)
-		: velocity(vx, vy)
-	{
-	}
-
-	void operator() (Character& pacman, sf::Time) const
-	{
-		pacman.setVelocity(velocity * pacman.getMaxSpeed());
-	}
-
-	sf::Vector2f velocity;
-};
-
-
 Player::Player()
 : _currentMissionStatus(MissionRunning)
 {
@@ -39,7 +22,7 @@ Player::Player()
 	// Set initial action bindings
 	initializeActions();
 
-	// Assign all categories to player's aircraft
+	// Assign all categories to player's character
 	FOREACH(auto& pair, _actionBinding)
 		pair.second.category = Category::Pacman;
 }
@@ -105,16 +88,10 @@ Player::MissionStatus Player::getMissionStatus() const
 
 void Player::initializeActions()
 {
-    //_actionBinding[TurnLeft].action = derivedAction<Character>(PacmanMover(-1, 0));
-    //_actionBinding[TurnRight].action = derivedAction<Character>(PacmanMover(+1, 0));
-    //_actionBinding[TurnUp].action = derivedAction<Character>(PacmanMover(0, -1));
-    //_actionBinding[TurnDown].action = derivedAction<Character>(PacmanMover(0, +1));
-    
     _actionBinding[TurnLeft].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(-1,0)); });
     _actionBinding[TurnRight].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(+1,0)); });
     _actionBinding[TurnUp].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(0,-1)); });
-    _actionBinding[TurnDown].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(0,1)); });
-   
+    _actionBinding[TurnDown].action = derivedAction<Character>([] (Character& a, sf::Time){ a.setNextDirection(sf::Vector2f(0,1)); });  
 }
 
 bool Player::isRealtimeAction(Action action)
