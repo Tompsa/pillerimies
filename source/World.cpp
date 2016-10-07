@@ -185,7 +185,7 @@ void World::buildScene()
 
 	
 	// Load map 
-	_map.loadMap("level_revised.txt");
+	_map.loadMap("level.txt");
 	
 	// Add level walls
 	_map.addWalls(_textures, *_sceneLayers[MazeLayer]);
