@@ -35,7 +35,7 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 	pacCommand.category = Category::Pacman;
 	pacCommand.action = derivedAction<Character>([this](Character& a, sf::Time)
 	{
-		_pacTilePos = a.getPosition() / 8.f ;
+		_pacTilePos = a.getPosition() / 32.f ;
 
 	});
 
@@ -48,7 +48,7 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 
 			for (auto &dir : a.getValidDirections())
 			{
-				sf::Vector2f var = a.getPosition()/8.f + dir;
+				sf::Vector2f var = a.getPosition()/32.f + dir;
 				int dist = getManhattanDistance(_pacTilePos, var);
 				if (dist < shortestDistance)
 				{

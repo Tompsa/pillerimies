@@ -12,7 +12,7 @@
 const sf::Time Application::TimePerFrame = sf::seconds(1.f/60.f);
 
 Application::Application()
-: _window(sf::VideoMode(640, 640), "pillerimies", sf::Style::Close)
+: _window(sf::VideoMode(1200, 1000), "pillerimies", sf::Style::Close)
 , _textures()
 , _fonts()
 , _player()

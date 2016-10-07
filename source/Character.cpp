@@ -23,6 +23,9 @@ Character::Character(Type type, const TextureHolder& textures)
 , _direction(0.f, 0.f)
 , _nextDirection(0.f, 0.f)
 , _target(0.f, 0.f)
+, _elapsedTime(sf::Time::Zero)
+, _duration(sf::seconds(0.25f))
+, _currentFrame(0)
 {
 	centerOrigin(_sprite);
 }
@@ -39,7 +42,7 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 	{
 		//if(_validDirection)
 		if (std::find(_validDirections.begin(),_validDirections.end(), _direction) != _validDirections.end())
-			_target = getPosition() + _direction * 8.f;
+			_target = getPosition() + _direction * 32.f;
 		else
 			_direction = _nextDirection;
 	}
@@ -52,6 +55,8 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 				_direction = _nextDirection;
 		}
 	}
+
+	updateMovementAnimation(dt);
 
 	Entity::updateCurrent(dt, commands);
 }
@@ -130,6 +135,75 @@ bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 		setPosition(goal);
 		
 	return getPosition() == goal;
+}
+
+void Character::updateMovementAnimation(sf::Time dt)
+{
+	std::size_t numFrames = 2;
+	bool repeat = true;
+
+	sf::Time timePerFrame = _duration / static_cast<float>(numFrames);
+	_elapsedTime += dt;
+
+	sf::IntRect textureRect = _sprite.getTextureRect();
+
+	// Default sprite, moving right
+	if (_direction == sf::Vector2f(1, 0) && textureRect.top != Table[_type].textureRect.top)
+		textureRect = Table[_type].textureRect;
+	// Moving down
+	if (_direction == sf::Vector2f(0, 1) && 
+		textureRect.top != Table[_type].textureRect.top + Table[_type].textureRect.height)
+	{
+		textureRect = Table[_type].textureRect;
+		textureRect.top += Table[_type].textureRect.height;
+	}
+	// Moving left
+	if (_direction == sf::Vector2f(-1, 0) && 
+		textureRect.top != Table[_type].textureRect.top + 2* Table[_type].textureRect.height)
+	{
+		textureRect = Table[_type].textureRect;
+		textureRect.top += 2 * Table[_type].textureRect.height;
+	}
+	// Moving up
+	if (_direction == sf::Vector2f(0, -1) && 
+		textureRect.top != Table[_type].textureRect.top + 3 * Table[_type].textureRect.height)
+	{
+		textureRect = Table[_type].textureRect;
+		textureRect.top += 3 * Table[_type].textureRect.height;
+	}
+
+
+	if (_currentFrame == 0)
+		textureRect.left = Table[_type].textureRect.left;
+
+	if (_elapsedTime >= timePerFrame && (_currentFrame <= numFrames || repeat))
+	{
+		// Move the texture rect left
+		textureRect.left += textureRect.width;
+
+		// If we reach the end of the texture
+		if (textureRect.left + textureRect.width > Table[_type].textureRect.left + 2 * Table[_type].textureRect.width)
+		{
+			// Move it to first frame on the line
+			textureRect.left -= textureRect.width;
+		}
+
+		// And progress to next frame
+		_elapsedTime -= timePerFrame;
+		if (repeat)
+		{
+			_currentFrame = (_currentFrame + 1) % numFrames;
+
+			if (_currentFrame == 0)
+				textureRect.left = Table[_type].textureRect.left;
+		}
+		else
+		{
+			_currentFrame++;
+		}
+
+	}
+	_sprite.setTextureRect(textureRect);
 }
 
 void Character::collectPill()

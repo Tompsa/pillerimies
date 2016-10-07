@@ -89,7 +89,10 @@ bool World::hasAlivePlayer() const
 
 void World::loadTextures()
 {
-	_textures.load(Textures::Entities, "Media/Textures/sprites_masked.png");
+	//_textures.load(Textures::Entities, "Media/Textures/sprites_masked.png");
+	_textures.load(Textures::Entities, "Media/Textures/chompersprites.png");
+	_textures.load(Textures::MazeTiles, "Media/Textures/chompermazetiles.png");
+	_textures.load(Textures::Background, "Media/Textures/background.png");
 }
 
 bool matchesCategories(SceneNode::Pair& colliders, Category::Type type1, Category::Type type2)
@@ -167,9 +170,22 @@ void World::buildScene()
 
 		_sceneGraph.attachChild(std::move(layer));
 	}
+	// Prepare the tiled background
+	sf::Texture& bgTexture = _textures.get(Textures::Background);
+	bgTexture.setRepeated(true);
+
+	float viewHeight = _worldView.getSize().y;
+	sf::IntRect textureRect(_worldBounds);
+	textureRect.height += static_cast<int>(viewHeight);
+
+	// Add the background sprite to the scene
+	std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTexture, textureRect));
+	bgSprite->setPosition(_worldBounds.left, _worldBounds.top - viewHeight);
+	_sceneLayers[Background]->attachChild(std::move(bgSprite));
+
 	
 	// Load map 
-	_map.loadMap("level.txt");
+	_map.loadMap("level_revised.txt");
 	
 	// Add level walls
 	_map.addWalls(_textures, *_sceneLayers[MazeLayer]);
@@ -205,14 +221,14 @@ void World::addPills()
 		if(_map.isPillTile(x,y))
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::Pill, _textures));
-			pill->setPosition(8*x + 4 , 8*y + 4);
+			pill->setPosition(32*x + 16 , 32*y + 16);
 			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
 		}		
 		if (_map.isSuperPillTile(x,y))
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::SuperPill, _textures));
-			pill->setPosition(8 * x + 4, 8 * y + 4);
+			pill->setPosition(32 * x + 16, 32 * y + 16);
 			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
 		}
@@ -227,10 +243,10 @@ sf::FloatRect World::getViewBounds() const
 void World::updateTexts()
 {
     _scoreDisplay->setString(toString(_playerScore));
-    _scoreDisplay->setPosition(_worldView.getSize().x / 2.f, 475.f);
+    _scoreDisplay->setPosition(1100.f, 475.f);
     
     _livesDisplay->setString("Lives: " + toString(_playerLives));
-    _livesDisplay->setPosition(_worldView.getSize().x / 2.f, 500.f);
+    _livesDisplay->setPosition(1100.f, 500.f);
     
 	float xpos = _pacman->getPosition().x;
 	float ypos = _pacman->getPosition().y;
@@ -243,7 +259,7 @@ void World::updateTexts()
 					"\nX-direction " + toString(xdir) + 		
 					"\nY-direction " + toString(ydir)					
 					);
-    _debugDisplay->setPosition(_worldView.getSize().x / 2.f, 300.f);
+    _debugDisplay->setPosition(1100.f, 300.f);
 }
 
 void World::checkCharacterDirections()
@@ -252,17 +268,6 @@ void World::checkCharacterDirections()
 	charCollector.category = Category::Character;
 	charCollector.action = derivedAction<Character>([this] (Character& character, sf::Time)
 	{
-			//// See if current direction is valid and set flag accordingly
-			//if(checkDirection(character.getPosition(), character.getDirection()))
-			//	character.setValidDirection(true);
-			//else
-			//	character.setValidDirection(false);
-			//
-			//// See if next direction is valid and set flag accordingly
-			//if(checkDirection(character.getPosition(), character.getNextDirection()))
-			//	character.setValidNextDirection(true);
-			//else
-			//	character.setValidNextDirection(false);
 		character.resetValidDirections();
 		if (checkDirection(character.getPosition(), sf::Vector2f(-1, 0)))
 			character.addValidDirection(sf::Vector2f(-1, 0));
@@ -278,12 +283,12 @@ void World::checkCharacterDirections()
 }
 
 bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
-	{
-		sf::Vector2i mapNodePos(position.x / 8, position.y / 8);
+{
+	sf::Vector2i mapNodePos(position.x / 32, position.y / 32);
 		
-		sf::Vector2i intDirection(direction.x, direction.y);
+	sf::Vector2i intDirection(direction.x, direction.y);
 		
-		sf::Vector2i var = mapNodePos + intDirection;
+	sf::Vector2i targetedTile = mapNodePos + intDirection;
 
-		return _map.isEnterableTile(var);
-	} 
+	return _map.isEnterableTile(targetedTile);
+} 

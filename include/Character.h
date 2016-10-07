@@ -61,6 +61,8 @@ class Character : public Entity
 			virtual void			drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const;
 			virtual void 			updateCurrent(sf::Time dt, CommandQueue& commands);
 			bool					moveTowardsPoint(sf::Vector2f goal, sf::Time dt);
+
+			void					updateMovementAnimation(sf::Time dt);
 		
 	private:
 			Type 					_type;
@@ -70,6 +72,9 @@ class Character : public Entity
 			sf::Vector2f			_nextDirection;
 			sf::Vector2f			_target;
 			std::vector<sf::Vector2f> _validDirections;
+			sf::Time				_elapsedTime;
+			sf::Time				_duration;
+			std::size_t				_currentFrame;
 };
 
 
