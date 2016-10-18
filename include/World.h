@@ -45,7 +45,7 @@ class World : private sf::NonCopyable
 		void								addPills();
 		sf::FloatRect						getViewBounds() const;
 		void								checkCharacterDirections();
-		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction);
+		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction, Character& ch);
         
         void                                updateTexts();
 

@@ -269,20 +269,20 @@ void World::checkCharacterDirections()
 	charCollector.action = derivedAction<Character>([this] (Character& character, sf::Time)
 	{
 		character.resetValidDirections();
-		if (checkDirection(character.getPosition(), sf::Vector2f(-1, 0)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(-1, 0), character))
 			character.addValidDirection(sf::Vector2f(-1, 0));
-		if (checkDirection(character.getPosition(), sf::Vector2f(1, 0)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(1, 0), character))
 			character.addValidDirection(sf::Vector2f(1, 0));
-		if (checkDirection(character.getPosition(), sf::Vector2f(0, 1)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(0, 1), character))
 			character.addValidDirection(sf::Vector2f(0, 1));
-		if (checkDirection(character.getPosition(), sf::Vector2f(0, -1)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(0, -1), character))
 			character.addValidDirection(sf::Vector2f(0, -1));
 	});	
 		
 	_commandQueue.push(charCollector);
 }
 
-bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
+bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction, Character& ch)
 {
 	sf::Vector2i mapNodePos(position.x / 32, position.y / 32);
 		
@@ -290,5 +290,8 @@ bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
 		
 	sf::Vector2i targetedTile = mapNodePos + intDirection;
 
-	return _map.isEnterableTile(targetedTile);
+	if (ch.getStatus() != Character::Eaten && _map.isGateTile(targetedTile))
+		return false;
+	else
+		return _map.isEnterableTile(targetedTile);
 } 

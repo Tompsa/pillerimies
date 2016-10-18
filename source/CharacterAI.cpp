@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 
 
 using namespace std::placeholders;
@@ -36,6 +37,7 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 	pacCommand.action = derivedAction<Character>([this](Character& a, sf::Time)
 	{
 		_pacTilePos = a.getPosition() / 32.f ;
+		_pacDirection = a.getDirection();
 
 	});
 
@@ -43,20 +45,58 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 	ghostCommand.category = Category::Ghost;
 	ghostCommand.action = derivedAction<Character>([this](Character& a, sf::Time)
 	{
-		int shortestDistance = 1000;
-		sf::Vector2f newDir;
+		float shortestDistance = 1000.f;
+		float shortestDistanceAlt = 1000.f;
+		sf::Vector2f newShortestDir;
+		sf::Vector2f target;
+		sf::Vector2f newDirAlt;
 
-			for (auto &dir : a.getValidDirections())
+		switch (a.getCategory())
+		{
+		case Category::Blinky:
+			target = _pacTilePos;
+			break;
+		case Category::Inky:
+			target = _pacTilePos + _pacDirection * (2.f * 32.f);
+			break;
+		case Category::Pinky:
+			target = _pacTilePos + _pacDirection * (4.f * 32.f);
+			break;
+		case Category::Clyde:
+			target = _pacTilePos;
+			break;
+		}
+
+		for (auto &dir : a.getValidDirections())
+		{
+			// Skip direction if opposite of current direction
+			if (dir == -a.getDirection()) continue;
+
+			sf::Vector2f var = a.getPosition() / 32.f + dir;
+			int dist = getManhattanDistance(target, var);
+			if (dist < shortestDistance)
 			{
-				sf::Vector2f var = a.getPosition()/32.f + dir;
-				int dist = getManhattanDistance(_pacTilePos, var);
-				if (dist < shortestDistance)
+				shortestDistance = dist;
+				newShortestDir = dir;
+			}
+
+			if (a.getCategory() == Category::Clyde)
+			{			
+				int distAlt = getManhattanDistance(sf::Vector2f(0.f, 35.f*8.f), var);
+				if (distAlt < shortestDistanceAlt)
 				{
-					shortestDistance = dist;
-					newDir = dir;
+					shortestDistanceAlt = distAlt;
+					newDirAlt = dir;
 				}
 			}
-			a.setNextDirection(newDir);
+		}
+
+		if (a.getCategory() == Category::Clyde && shortestDistance <= 8)
+		{
+			a.setNextDirection(newDirAlt);
+		}
+		else
+			a.setNextDirection(newShortestDir);
 	});
 
 	commands.push(pacCommand);

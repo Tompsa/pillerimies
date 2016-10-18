@@ -30,6 +30,7 @@ private:
 private:
 	std::map<Action, Command> _actionBinding;
 	sf::Vector2f _pacTilePos;
+	sf::Vector2f _pacDirection;
 };
 
 #endif //CHARACTERAI_H

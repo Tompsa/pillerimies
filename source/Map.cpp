@@ -90,3 +90,11 @@ bool Map::isEnterableTile(sf::Vector2i pos) const
 	else
 		return false;
 }
+
+bool Map::isEnterableTile(int x, int y) const
+{
+	if (_map[x][y].x != Wall && _map[x][y].y == -1)
+		return true;
+	else
+		return false;
+}
