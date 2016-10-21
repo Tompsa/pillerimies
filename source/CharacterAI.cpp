@@ -45,48 +45,97 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 	ghostCommand.category = Category::Ghost;
 	ghostCommand.action = derivedAction<Character>([this](Character& a, sf::Time)
 	{
-		float shortestDistance = 1000.f;
-		float shortestDistanceAlt = 1000.f;
+		int shortestDistance = 1000;
+		int shortestDistanceAlt = 1000;
 		sf::Vector2f newShortestDir;
 		sf::Vector2f target;
 		sf::Vector2f newDirAlt;
 
-		switch (a.getCategory())
+		if (a.getStatus() == Character::Scared)
 		{
-		case Category::Blinky:
-			target = _pacTilePos;
-			break;
-		case Category::Inky:
-			target = _pacTilePos + _pacDirection * (2.f * 32.f);
-			break;
-		case Category::Pinky:
-			target = _pacTilePos + _pacDirection * (4.f * 32.f);
-			break;
-		case Category::Clyde:
-			target = _pacTilePos;
-			break;
-		}
+			// If player has eaten SuperPill, ghosts take random turns at intersections
+			int randomIndex = rand() % static_cast<unsigned int>(a.getValidDirections().size());
 
-		for (auto &dir : a.getValidDirections())
-		{
-			// Skip direction if opposite of current direction
-			if (dir == -a.getDirection()) continue;
-
-			sf::Vector2f var = a.getPosition() / 32.f + dir;
-			int dist = getManhattanDistance(target, var);
-			if (dist < shortestDistance)
+			for (int i = 0; i < a.getValidDirections().size(); ++i)
 			{
-				shortestDistance = dist;
-				newShortestDir = dir;
+				if (a.getValidDirections().at(i) == -a.getDirection()) continue;
+
+				if (i == randomIndex)
+					newShortestDir = a.getValidDirections().at(i);
 			}
 
-			if (a.getCategory() == Category::Clyde)
-			{			
-				int distAlt = getManhattanDistance(sf::Vector2f(0.f, 35.f*8.f), var);
-				if (distAlt < shortestDistanceAlt)
+			if (a.getStateTimer().asSeconds() >= 5)
+				a.setStatus(Character::Regular);
+		}
+
+		else
+		{
+			if (a.getStatus() == Character::Regular)
+			{
+				switch (a.getCategory())
 				{
-					shortestDistanceAlt = distAlt;
-					newDirAlt = dir;
+				case Category::Blinky:
+					target = _pacTilePos;
+					break;
+				case Category::Inky:
+					target = _pacTilePos + _pacDirection * (2.f * 32.f);
+					break;
+				case Category::Pinky:
+					target = _pacTilePos + _pacDirection * (4.f * 32.f);
+					break;
+				case Category::Clyde:
+					target = _pacTilePos;
+					break;
+				}
+			}
+
+			if (a.getStatus() == Character::Scatter)
+			{
+				switch (a.getCategory())
+				{
+				case Category::Blinky:
+					target = { 25.f * 32.f, 0.f * 32.f };;
+					break;
+				case Category::Inky:
+					target = { 27.f * 32.f, 35.f * 32.f };;
+					break;
+				case Category::Pinky:
+					target = { 2.f * 32.f, 0.f * 32.f };
+					break;
+				case Category::Clyde:
+					target = { 0.f * 32.f, 35.f * 32.f };
+					break;
+				}
+				if (a.getStateTimer().asSeconds() >= 7)
+					a.setStatus(Character::Regular);
+			}
+
+			if (a.getStatus() == Character::Eaten)
+			{
+
+			}
+			
+			for (auto &dir : a.getValidDirections())
+			{
+				// Skip direction if opposite of current direction
+				if (dir == -a.getDirection()) continue;
+
+				sf::Vector2f var = a.getPosition() / 32.f + dir;
+				int dist = getManhattanDistance(target, var);
+				if (dist < shortestDistance)
+				{
+					shortestDistance = dist;
+					newShortestDir = dir;
+				}
+
+				if (a.getCategory() == Category::Clyde)
+				{
+					int distAlt = getManhattanDistance(sf::Vector2f(0.f, 35.f*8.f), var);
+					if (distAlt < shortestDistanceAlt)
+					{
+						shortestDistanceAlt = distAlt;
+						newDirAlt = dir;
+					}
 				}
 			}
 		}

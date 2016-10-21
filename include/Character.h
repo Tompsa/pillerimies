@@ -35,8 +35,10 @@ class Character : public Entity
 			{
 				Regular,
 				Super,
+				Scatter,
 				Scared,
 				Eaten,
+				InSpawn,
 			};
 			
 	public:
@@ -56,6 +58,7 @@ class Character : public Entity
 			void					setStatus(Status var);
 			Status					getStatus() const;
 			void					resetCharacter();
+			sf::Time				getStateTimer();
 			
 	private:
 			virtual void			drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -75,6 +78,7 @@ class Character : public Entity
 			sf::Time				_elapsedTime;
 			sf::Time				_duration;
 			std::size_t				_currentFrame;
+			sf::Time				_statusTimer;
 };
 
 
