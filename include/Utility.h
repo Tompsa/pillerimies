@@ -39,6 +39,7 @@ float 			dot(sf::Vector2f vector1, sf::Vector2f vector2);
 
 // Node operations
 sf::Vector2f 	getPosFromNode(int x, int y);
+sf::Vector2i	getNodeFromPos(sf::Vector2f pos);
 int	getManhattanDistance(sf::Vector2f x, sf::Vector2f y);
 
 

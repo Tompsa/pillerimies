@@ -28,7 +28,6 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
 	, _activeGhosts()
     , _scoreDisplay(nullptr)
     , _livesDisplay(nullptr)
-    , _debugDisplay(nullptr)
 	, _map()
 {
 	_spawnPosition = getPosFromNode(14,23);
@@ -42,10 +41,6 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
     std::unique_ptr<TextNode> livesDisplay(new TextNode(fonts, ""));
 	_livesDisplay = livesDisplay.get();
 	_sceneLayers[EntityLayer]->attachChild(std::move(livesDisplay));
-	
-	std::unique_ptr<TextNode> debugDisplay(new TextNode(fonts, ""));
-	_debugDisplay = debugDisplay.get();
-	_sceneLayers[EntityLayer]->attachChild(std::move(debugDisplay));
 	
     updateTexts();
 }
@@ -141,9 +136,9 @@ void World::handleCollisions()
 	}
 	for (std::vector<Character*>::iterator it = _activeGhosts.begin(); it != _activeGhosts.end(); ++it)
 	{
-		if ( (_pacman->getPosition() == (*it)->getPosition()) )
+		if (getNodeFromPos(_pacman->getPosition()) == getNodeFromPos((*it)->getPosition()))
 		{	
-			if (_pacman->getStatus() == Character::Super && (*it)->getStatus() != Character::Eaten)
+			if (_pacman->getStatus() == Character::Super && (*it)->getStatus() == Character::Scared)
 			{
 				(*it)->setStatus(Character::Eaten);
 				_playerScore += 50;
@@ -194,7 +189,7 @@ void World::buildScene()
 	addPills();
 
 	// Add player's character
-	std::unique_ptr<Character> pacman(new Character(Character::Pacman, _textures));
+	std::unique_ptr<Character> pacman(new Character(Character::Pacman, _textures, _fonts));
 	_pacman = pacman.get();
 	_pacman->setPosition(_spawnPosition);
 	_sceneLayers[EntityLayer]->attachChild(std::move(pacman));
@@ -207,7 +202,7 @@ void World::addGhosts()
 {
 	for(int type = Character::Type::Blinky; type < Character::Type::TypeCount; type++)
 	{
-		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures));
+		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures, _fonts));
 		_activeGhosts.push_back(ghost.get());
 		ghost->setPosition(getPosFromNode(type+8,11));
 		_sceneLayers[EntityLayer]->attachChild(std::move(ghost));
@@ -247,19 +242,7 @@ void World::updateTexts()
     
     _livesDisplay->setString("Lives: " + toString(_playerLives));
     _livesDisplay->setPosition(1100.f, 500.f);
-    
-	float xpos = _pacman->getPosition().x;
-	float ypos = _pacman->getPosition().y;
-	
-	float xdir = _pacman->getDirection().x;
-	float ydir = _pacman->getDirection().y;
-   
-    _debugDisplay->setString("X-pos " + toString(xpos) + 
-					"\nY-pos " + toString(ypos)+ 
-					"\nX-direction " + toString(xdir) + 		
-					"\nY-direction " + toString(ydir)					
-					);
-    _debugDisplay->setPosition(1100.f, 300.f);
+
 }
 
 void World::checkCharacterDirections()

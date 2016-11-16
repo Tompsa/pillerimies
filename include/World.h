@@ -79,7 +79,6 @@ class World : private sf::NonCopyable
         
         TextNode*                           _scoreDisplay;
         TextNode*                           _livesDisplay;
-        TextNode*                           _debugDisplay;
 };
 
 #endif //WORLD_H

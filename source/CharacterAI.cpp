@@ -39,6 +39,9 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 		_pacTilePos = a.getPosition() / 32.f ;
 		_pacDirection = a.getDirection();
 
+		if (a.getStatus() == Character::Super &&  a.getStateTimer().asSeconds() >= 5)
+			a.setStatus(Character::Regular);
+
 	});
 
 	Command ghostCommand;
@@ -112,8 +115,14 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 
 			if (a.getStatus() == Character::Eaten)
 			{
+				target = { 14.f * 32.f, 14.f * 32.f };
+			}
+
+			if (a.getStatus() == Character::InSpawn)
+			{
 
 			}
+
 			
 			for (auto &dir : a.getValidDirections())
 			{

@@ -4,6 +4,7 @@
 #include "Entity.h"
 #include "Command.h"
 #include "ResourceIdentifiers.h"
+#include "TextNode.h"
 
 #include <SFML/Graphics/Sprite.hpp>
 
@@ -42,7 +43,7 @@ class Character : public Entity
 			};
 			
 	public:
-			Character(Type type, const TextureHolder& textures);
+			Character(Type type, const TextureHolder& textures, const FontHolder& fonts);
 			
 			virtual unsigned int	getCategory() const;
 			virtual sf::FloatRect 	getBoundingRect() const;
@@ -65,6 +66,8 @@ class Character : public Entity
 			virtual void 			updateCurrent(sf::Time dt, CommandQueue& commands);
 			bool					moveTowardsPoint(sf::Vector2f goal, sf::Time dt);
 
+			void					updateTexts();
+
 			void					updateMovementAnimation(sf::Time dt);
 		
 	private:
@@ -79,6 +82,7 @@ class Character : public Entity
 			sf::Time				_duration;
 			std::size_t				_currentFrame;
 			sf::Time				_statusTimer;
+			TextNode*			_debugDisplay;
 };
 
 

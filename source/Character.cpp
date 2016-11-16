@@ -15,7 +15,7 @@ namespace
 	const std::vector<CharacterData> Table = initializeCharacterData();
 }
 
-Character::Character(Type type, const TextureHolder& textures)
+Character::Character(Type type, const TextureHolder& textures, const FontHolder& fonts)
 : Entity(Table[type].hitpoints)
 , _type(type)
 , _status(Regular)
@@ -27,8 +27,18 @@ Character::Character(Type type, const TextureHolder& textures)
 , _duration(sf::seconds(0.25f))
 , _currentFrame(0)
 , _statusTimer(sf::Time::Zero)
+, _debugDisplay(nullptr)
 {
 	centerOrigin(_sprite);
+
+
+	std::unique_ptr<TextNode> debugDisplay(new TextNode(fonts, ""));
+	debugDisplay->setPosition(0, 25);
+	_debugDisplay = debugDisplay.get();
+	attachChild(std::move(debugDisplay));
+	
+
+	updateTexts();
 }
 
 void Character::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
@@ -61,6 +71,8 @@ void Character::updateCurrent(sf::Time dt, CommandQueue& commands)
 	_statusTimer += dt;
 
 	Entity::updateCurrent(dt, commands);
+
+	updateTexts();
 }
 
 unsigned int Character::getCategory() const
@@ -139,6 +151,14 @@ bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 	return getPosition() == goal;
 }
 
+void Character::updateTexts()
+{
+	if (_debugDisplay)
+	{
+		_debugDisplay->setString( "status " + toString(_status)	);
+	}
+}
+
 void Character::updateMovementAnimation(sf::Time dt)
 {
 	std::size_t numFrames = 2;
@@ -149,7 +169,7 @@ void Character::updateMovementAnimation(sf::Time dt)
 
 	sf::IntRect textureRect = _sprite.getTextureRect();
 
-	if (_status != Scared)
+	if (_status != Scared && _status != Eaten)
 	{
 		// Default sprite, moving right
 		if (_direction == sf::Vector2f(1, 0) && textureRect.top != Table[_type].textureRect.top)
@@ -197,7 +217,7 @@ void Character::updateMovementAnimation(sf::Time dt)
 
 			if (_currentFrame == 0)
 			{
-				if (_status != Scared)
+				if (_status != Scared && _status != Eaten)
 					textureRect.left = Table[_type].textureRect.left;
 				else
 					textureRect.left = 12 * Table[_type].textureRect.width;
