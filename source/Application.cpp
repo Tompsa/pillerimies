@@ -32,7 +32,7 @@ Application::Application()
 	_textures.load(Textures::ButtonPressed,	"Media/Textures/ButtonPressed.png");
 
 	_statisticsText.setFont(_fonts.get(Fonts::Main));
-	_statisticsText.setPosition(5.f, 500.f);
+	_statisticsText.setPosition(1150.f, 5.f);
 	_statisticsText.setCharacterSize(10u);
 
 	registerStates();

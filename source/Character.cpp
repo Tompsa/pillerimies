@@ -155,7 +155,9 @@ void Character::updateTexts()
 {
 	if (_debugDisplay)
 	{
-		_debugDisplay->setString( "status " + toString(_status)	);
+		_debugDisplay->setString( "status " + toString(_status)	+
+		"\nvalid directions size " + toString(_validDirections.size())
+		);
 	}
 }
 

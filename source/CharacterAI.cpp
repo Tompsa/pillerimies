@@ -81,10 +81,10 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 					target = _pacTilePos;
 					break;
 				case Category::Inky:
-					target = _pacTilePos + _pacDirection * (2.f * 32.f);
+					target = _pacTilePos + _pacDirection * (2.f );
 					break;
 				case Category::Pinky:
-					target = _pacTilePos + _pacDirection * (4.f * 32.f);
+					target = _pacTilePos + _pacDirection * (4.f );
 					break;
 				case Category::Clyde:
 					target = _pacTilePos;
@@ -97,16 +97,16 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 				switch (a.getCategory())
 				{
 				case Category::Blinky:
-					target = { 25.f * 32.f, 0.f * 32.f };;
+					target = { 25.f , 0.f  };;
 					break;
 				case Category::Inky:
-					target = { 27.f * 32.f, 35.f * 32.f };;
+					target = { 27.f , 35.f  };;
 					break;
 				case Category::Pinky:
-					target = { 2.f * 32.f, 0.f * 32.f };
+					target = { 2.f , 0.f  };
 					break;
 				case Category::Clyde:
-					target = { 0.f * 32.f, 35.f * 32.f };
+					target = { 0.f , 35.f };
 					break;
 				}
 				if (a.getStateTimer().asSeconds() >= 7)
@@ -115,12 +115,14 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 
 			if (a.getStatus() == Character::Eaten)
 			{
-				target = { 14.f * 32.f, 14.f * 32.f };
+				target = { 14.f , 14.f };
 			}
 
 			if (a.getStatus() == Character::InSpawn)
 			{
-
+				target = { 14.f , 14.f };
+				if (a.getStateTimer().asSeconds() >= 7)
+					a.setStatus(Character::Regular);
 			}
 
 			
@@ -129,7 +131,9 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 				// Skip direction if opposite of current direction
 				if (dir == -a.getDirection()) continue;
 
+				// Tile of targeted direction
 				sf::Vector2f var = a.getPosition() / 32.f + dir;
+
 				int dist = getManhattanDistance(target, var);
 				if (dist < shortestDistance)
 				{
@@ -137,7 +141,7 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 					newShortestDir = dir;
 				}
 
-				if (a.getCategory() == Category::Clyde)
+				if (a.getCategory() == Category::Clyde && a.getStatus() != Character::Eaten)
 				{
 					int distAlt = getManhattanDistance(sf::Vector2f(0.f, 35.f*8.f), var);
 					if (distAlt < shortestDistanceAlt)
@@ -149,7 +153,7 @@ void CharacterAI::controlGhosts(CommandQueue& commands)
 			}
 		}
 
-		if (a.getCategory() == Category::Clyde && shortestDistance <= 8)
+		if (a.getCategory() == Category::Clyde && shortestDistance <= 8 && a.getStatus() != Character::Eaten)
 		{
 			a.setNextDirection(newDirAlt);
 		}

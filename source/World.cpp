@@ -52,6 +52,7 @@ void World::update(sf::Time dt)
 		_sceneGraph.onCommand(_commandQueue.pop(), dt);
 			
 	checkCharacterDirections();
+	updateGhostStatus();
 	
 	// Collision detection and response (may destroy entities)
 	handleCollisions();
@@ -273,8 +274,27 @@ bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction, Charac
 		
 	sf::Vector2i targetedTile = mapNodePos + intDirection;
 
-	if (ch.getStatus() != Character::Eaten && _map.isGateTile(targetedTile))
+	if (ch.getStatus() != Character::Eaten && _map.isGateTile(targetedTile) && !_map.isGhostSpawnTile(mapNodePos.x, mapNodePos.y))
+		return false;
+	if (ch.getStatus() == Character::Regular && _map.isGateTile(targetedTile) && _map.isGhostSpawnTile(mapNodePos.x, mapNodePos.y))
+		return true;
+	if (ch.getStatus() == Character::Regular && _map.isGateTile(mapNodePos + sf::Vector2i(0, -1)) && _map.isGhostSpawnTile(targetedTile.x, targetedTile.y))
+		return false;
+	if ( _map.isTunnelTile(targetedTile.x, targetedTile.y))
 		return false;
 	else
 		return _map.isEnterableTile(targetedTile);
-} 
+}
+
+void World::updateGhostStatus()
+{
+	for(auto& ghost: _activeGhosts)
+	{ 
+		sf::Vector2f pos = ghost->getPosition() / 32.f;
+		if (_map.isGhostSpawnTile(pos.x, pos.y) && ghost->getStatus() == Character::Eaten)
+		{
+			ghost->setStatus(Character::InSpawn);
+		}
+	}
+		
+}

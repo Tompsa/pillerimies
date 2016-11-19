@@ -83,6 +83,22 @@ bool Map::isGateTile(int x, int y) const
 		return false;
 }
 
+bool Map::isGhostSpawnTile(int x, int y) const
+{
+	if (_map[x][y].x == GhostSpawn && _map[x][y].y == -1)
+		return true;
+	else
+		return false;
+}
+
+bool Map::isTunnelTile(int x, int y) const
+{
+	if ((_map[x][y].x == LeftTunnel || _map[x][y].x == RightTunnel) && _map[x][y].y == -1)
+		return true;
+	else
+		return false;
+}
+
 bool Map::isEnterableTile(sf::Vector2i pos) const
 {
 	if (_map[pos.x][pos.y].x != Wall && _map[pos.x][pos.y].y == -1)
