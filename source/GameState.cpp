@@ -24,11 +24,11 @@ bool GameState::update(sf::Time dt)
 		_player.setMissionStatus(Player::MissionFailure);
 		requestStackPush(States::GameOver);
 	}
-	//else if (_world.hasPlayerReachedEnd())
-	//{
-		//_player.setMissionStatus(Player::MissionSuccess);
-		//requestStackPush(States::GameOver);
-	//}
+	else if (_world.hasPlayerReachedEnd())
+	{
+		_player.setMissionStatus(Player::MissionSuccess);
+		requestStackPush(States::GameOver);
+	}
 
 	CommandQueue& commands = _world.getCommandQueue();
 	_player.handleRealtimeInput(commands);

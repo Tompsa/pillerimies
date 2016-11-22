@@ -11,25 +11,12 @@ class CommandQueue;
 class CharacterAI
 {
 public:
-	enum Action
-	{
-		TurnLeft,
-		TurnRight,
-		TurnUp,
-		TurnDown,
-		ActionCount
-	};
-	
-public:
 	CharacterAI();
 	void controlGhosts(CommandQueue& commands);
-
-private:
-	void initializeActions();
 	
 private:
-	std::map<Action, Command> _actionBinding;
 	sf::Vector2f _pacTilePos;
+	sf::Vector2f _pacDirection;
 };
 
 #endif //CHARACTERAI_H

@@ -28,7 +28,6 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
 	, _activeGhosts()
     , _scoreDisplay(nullptr)
     , _livesDisplay(nullptr)
-    , _debugDisplay(nullptr)
 	, _map()
 {
 	_spawnPosition = getPosFromNode(14,23);
@@ -43,10 +42,6 @@ World::World(sf::RenderWindow& window, FontHolder& fonts)
 	_livesDisplay = livesDisplay.get();
 	_sceneLayers[EntityLayer]->attachChild(std::move(livesDisplay));
 	
-	std::unique_ptr<TextNode> debugDisplay(new TextNode(fonts, ""));
-	_debugDisplay = debugDisplay.get();
-	_sceneLayers[EntityLayer]->attachChild(std::move(debugDisplay));
-	
     updateTexts();
 }
 
@@ -57,6 +52,7 @@ void World::update(sf::Time dt)
 		_sceneGraph.onCommand(_commandQueue.pop(), dt);
 			
 	checkCharacterDirections();
+	updateGhostStatus();
 	
 	// Collision detection and response (may destroy entities)
 	handleCollisions();
@@ -87,9 +83,17 @@ bool World::hasAlivePlayer() const
 	return !(_playerLives == 0);
 }
 
+bool World::hasPlayerReachedEnd() const
+{
+	return _remainingPills.size() == 0;
+}
+
 void World::loadTextures()
 {
-	_textures.load(Textures::Entities, "Media/Textures/sprites_masked.png");
+	//_textures.load(Textures::Entities, "Media/Textures/sprites_masked.png");
+	_textures.load(Textures::Entities, "Media/Textures/chompersprites.png");
+	_textures.load(Textures::MazeTiles, "Media/Textures/chompermazetiles.png");
+	_textures.load(Textures::Background, "Media/Textures/background.png");
 }
 
 bool matchesCategories(SceneNode::Pair& colliders, Category::Type type1, Category::Type type2)
@@ -138,9 +142,9 @@ void World::handleCollisions()
 	}
 	for (std::vector<Character*>::iterator it = _activeGhosts.begin(); it != _activeGhosts.end(); ++it)
 	{
-		if ( (_pacman->getPosition() == (*it)->getPosition()) )
+		if (getNodeFromPos(_pacman->getPosition()) == getNodeFromPos((*it)->getPosition()))
 		{	
-			if (_pacman->getStatus() == Character::Super && (*it)->getStatus() != Character::Eaten)
+			if (_pacman->getStatus() == Character::Super && (*it)->getStatus() == Character::Scared)
 			{
 				(*it)->setStatus(Character::Eaten);
 				_playerScore += 50;
@@ -167,6 +171,19 @@ void World::buildScene()
 
 		_sceneGraph.attachChild(std::move(layer));
 	}
+	// Prepare the tiled background
+	sf::Texture& bgTexture = _textures.get(Textures::Background);
+	bgTexture.setRepeated(true);
+
+	float viewHeight = _worldView.getSize().y;
+	sf::IntRect textureRect(_worldBounds);
+	textureRect.height += static_cast<int>(viewHeight);
+
+	// Add the background sprite to the scene
+	std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTexture, textureRect));
+	bgSprite->setPosition(_worldBounds.left, _worldBounds.top - viewHeight);
+	_sceneLayers[Background]->attachChild(std::move(bgSprite));
+
 	
 	// Load map 
 	_map.loadMap("level.txt");
@@ -178,7 +195,7 @@ void World::buildScene()
 	addPills();
 
 	// Add player's character
-	std::unique_ptr<Character> pacman(new Character(Character::Pacman, _textures));
+	std::unique_ptr<Character> pacman(new Character(Character::Pacman, _textures, _fonts));
 	_pacman = pacman.get();
 	_pacman->setPosition(_spawnPosition);
 	_sceneLayers[EntityLayer]->attachChild(std::move(pacman));
@@ -191,7 +208,7 @@ void World::addGhosts()
 {
 	for(int type = Character::Type::Blinky; type < Character::Type::TypeCount; type++)
 	{
-		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures));
+		std::unique_ptr<Character> ghost(new Character(static_cast<Character::Type>(type), _textures, _fonts));
 		_activeGhosts.push_back(ghost.get());
 		ghost->setPosition(getPosFromNode(type+8,11));
 		_sceneLayers[EntityLayer]->attachChild(std::move(ghost));
@@ -205,14 +222,14 @@ void World::addPills()
 		if(_map.isPillTile(x,y))
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::Pill, _textures));
-			pill->setPosition(8*x + 4 , 8*y + 4);
+			pill->setPosition(32*x + 16 , 32*y + 16);
 			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
 		}		
 		if (_map.isSuperPillTile(x,y))
 		{
 			std::unique_ptr<Pickup> pill(new Pickup(Pickup::SuperPill, _textures));
-			pill->setPosition(8 * x + 4, 8 * y + 4);
+			pill->setPosition(32 * x + 16, 32 * y + 16);
 			_remainingPills.push_back(pill.get());
 			_sceneLayers[EntityLayer]->attachChild(std::move(pill));
 		}
@@ -227,23 +244,11 @@ sf::FloatRect World::getViewBounds() const
 void World::updateTexts()
 {
     _scoreDisplay->setString(toString(_playerScore));
-    _scoreDisplay->setPosition(_worldView.getSize().x / 2.f, 475.f);
+    _scoreDisplay->setPosition(1100.f, 475.f);
     
     _livesDisplay->setString("Lives: " + toString(_playerLives));
-    _livesDisplay->setPosition(_worldView.getSize().x / 2.f, 500.f);
-    
-	float xpos = _pacman->getPosition().x;
-	float ypos = _pacman->getPosition().y;
-	
-	float xdir = _pacman->getDirection().x;
-	float ydir = _pacman->getDirection().y;
-   
-    _debugDisplay->setString("X-pos " + toString(xpos) + 
-					"\nY-pos " + toString(ypos)+ 
-					"\nX-direction " + toString(xdir) + 		
-					"\nY-direction " + toString(ydir)					
-					);
-    _debugDisplay->setPosition(_worldView.getSize().x / 2.f, 300.f);
+    _livesDisplay->setPosition(1100.f, 500.f);
+
 }
 
 void World::checkCharacterDirections()
@@ -252,38 +257,57 @@ void World::checkCharacterDirections()
 	charCollector.category = Category::Character;
 	charCollector.action = derivedAction<Character>([this] (Character& character, sf::Time)
 	{
-			//// See if current direction is valid and set flag accordingly
-			//if(checkDirection(character.getPosition(), character.getDirection()))
-			//	character.setValidDirection(true);
-			//else
-			//	character.setValidDirection(false);
-			//
-			//// See if next direction is valid and set flag accordingly
-			//if(checkDirection(character.getPosition(), character.getNextDirection()))
-			//	character.setValidNextDirection(true);
-			//else
-			//	character.setValidNextDirection(false);
 		character.resetValidDirections();
-		if (checkDirection(character.getPosition(), sf::Vector2f(-1, 0)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(-1, 0), character))
 			character.addValidDirection(sf::Vector2f(-1, 0));
-		if (checkDirection(character.getPosition(), sf::Vector2f(1, 0)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(1, 0), character))
 			character.addValidDirection(sf::Vector2f(1, 0));
-		if (checkDirection(character.getPosition(), sf::Vector2f(0, 1)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(0, 1), character))
 			character.addValidDirection(sf::Vector2f(0, 1));
-		if (checkDirection(character.getPosition(), sf::Vector2f(0, -1)))
+		if (checkDirection(character.getPosition(), sf::Vector2f(0, -1), character))
 			character.addValidDirection(sf::Vector2f(0, -1));
 	});	
 		
 	_commandQueue.push(charCollector);
 }
 
-bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction)
-	{
-		sf::Vector2i mapNodePos(position.x / 8, position.y / 8);
+bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction, Character& ch)
+{
+	sf::Vector2i mapNodePos(position.x / 32, position.y / 32);
 		
-		sf::Vector2i intDirection(direction.x, direction.y);
+	sf::Vector2i intDirection(direction.x, direction.y);
 		
-		sf::Vector2i var = mapNodePos + intDirection;
+	sf::Vector2i targetedTile = mapNodePos + intDirection;
 
-		return _map.isEnterableTile(var);
-	} 
+	if (ch.getStatus() != Character::Eaten && _map.isGateTile(targetedTile) && !_map.isGhostSpawnTile(mapNodePos.x, mapNodePos.y))
+		return false;
+	if (ch.getStatus() == Character::Regular && _map.isGateTile(targetedTile) && _map.isGhostSpawnTile(mapNodePos.x, mapNodePos.y))
+		return true;
+	if (ch.getStatus() == Character::Regular && _map.isGateTile(mapNodePos + sf::Vector2i(0, -1)) && _map.isGhostSpawnTile(targetedTile.x, targetedTile.y))
+		return false;
+	if (ch.getCategory() != Category::Pacman && _map.isTunnelTile(targetedTile.x, targetedTile.y))
+		return false;
+	else
+		return _map.isEnterableTile(targetedTile);
+}
+
+void World::updateGhostStatus()
+{
+	for(auto& ghost: _activeGhosts)
+	{ 
+		sf::Vector2f pos = ghost->getPosition() / 32.f;
+
+		// When ghost gets eaten and enter the spawn, set status to "InSpawn"
+		if (_map.isGhostSpawnTile(pos.x, pos.y) && ghost->getStatus() == Character::Eaten)
+		{
+			ghost->setStatus(Character::InSpawn);
+		}
+
+		// When ghost leaves the spawn, set status to "Scatter"
+		if (_map.isGateTile(pos.x, pos.y) && ghost->getStatus() == Character::Regular)
+		{
+			ghost->setStatus(Character::Scatter);
+		}
+	}
+		
+}

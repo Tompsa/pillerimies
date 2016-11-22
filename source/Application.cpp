@@ -12,7 +12,7 @@
 const sf::Time Application::TimePerFrame = sf::seconds(1.f/60.f);
 
 Application::Application()
-: _window(sf::VideoMode(640, 640), "pillerimies", sf::Style::Close)
+: _window(sf::VideoMode(1200, 1000), "pillerimies", sf::Style::Close)
 , _textures()
 , _fonts()
 , _player()
@@ -32,7 +32,7 @@ Application::Application()
 	_textures.load(Textures::ButtonPressed,	"Media/Textures/ButtonPressed.png");
 
 	_statisticsText.setFont(_fonts.get(Fonts::Main));
-	_statisticsText.setPosition(5.f, 500.f);
+	_statisticsText.setPosition(1150.f, 5.f);
 	_statisticsText.setCharacterSize(10u);
 
 	registerStates();

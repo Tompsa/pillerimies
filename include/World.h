@@ -35,6 +35,7 @@ class World : private sf::NonCopyable
 		CommandQueue&						getCommandQueue();
 
 		bool 								hasAlivePlayer() const;
+		bool								hasPlayerReachedEnd() const;
 
 	private:
 		void								loadTextures();
@@ -45,7 +46,8 @@ class World : private sf::NonCopyable
 		void								addPills();
 		sf::FloatRect						getViewBounds() const;
 		void								checkCharacterDirections();
-		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction);
+		bool 								checkDirection(sf::Vector2f position, sf::Vector2f direction, Character& ch);
+		void								updateGhostStatus();
         
         void                                updateTexts();
 
@@ -79,7 +81,6 @@ class World : private sf::NonCopyable
         
         TextNode*                           _scoreDisplay;
         TextNode*                           _livesDisplay;
-        TextNode*                           _debugDisplay;
 };
 
 #endif //WORLD_H

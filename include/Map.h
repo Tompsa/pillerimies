@@ -17,6 +17,10 @@ public:
 
 	bool								isPillTile(int x, int y) const;
 	bool								isSuperPillTile(int x, int y) const;
+	bool								isGateTile(sf::Vector2i pos) const;
+	bool								isGateTile(int x, int y) const;
+	bool								isGhostSpawnTile(int x, int y) const;
+	bool								isTunnelTile(int x, int y) const;
 
 	bool								isEnterableTile(sf::Vector2i pos) const;
 	bool								isEnterableTile(int x, int y) const;
@@ -36,33 +40,7 @@ private:
 	};
 
 private:
-	enum WallType
-	{
-		LeftVertical,
-		RightVertical,
-		UpHorizontal,
-		DownHorizontal,
-		UpLeftCorner,
-		UpRightCorner,
-		DownLeftCorner,
-		DownRightCorner,
-		SolidWallLeft,
-		SolidWallRight,
-		SolidWallUp,
-		SolidWallDown,
-		SolidCornerUpLeft,
-		SolidCornerUpRight,
-		SolidCornerDownLeft,
-		SolidCornerDownRight
-	};
-
-private:
-	void 								addWall(TextureHolder &textures, SceneNode &mazeLayer, WallType type, sf::Vector2f pos);
-
-private:
-	unsigned char _map[28][31];
-
-
+	sf::Vector2i _map[28][31];
 };
 
 #endif // !MAP_H
