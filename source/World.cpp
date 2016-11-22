@@ -83,6 +83,11 @@ bool World::hasAlivePlayer() const
 	return !(_playerLives == 0);
 }
 
+bool World::hasPlayerReachedEnd() const
+{
+	return _remainingPills.size() == 0;
+}
+
 void World::loadTextures()
 {
 	//_textures.load(Textures::Entities, "Media/Textures/sprites_masked.png");
@@ -280,7 +285,7 @@ bool World::checkDirection(sf::Vector2f position, sf::Vector2f direction, Charac
 		return true;
 	if (ch.getStatus() == Character::Regular && _map.isGateTile(mapNodePos + sf::Vector2i(0, -1)) && _map.isGhostSpawnTile(targetedTile.x, targetedTile.y))
 		return false;
-	if ( _map.isTunnelTile(targetedTile.x, targetedTile.y))
+	if (ch.getCategory() != Category::Pacman && _map.isTunnelTile(targetedTile.x, targetedTile.y))
 		return false;
 	else
 		return _map.isEnterableTile(targetedTile);
@@ -291,9 +296,17 @@ void World::updateGhostStatus()
 	for(auto& ghost: _activeGhosts)
 	{ 
 		sf::Vector2f pos = ghost->getPosition() / 32.f;
+
+		// When ghost gets eaten and enter the spawn, set status to "InSpawn"
 		if (_map.isGhostSpawnTile(pos.x, pos.y) && ghost->getStatus() == Character::Eaten)
 		{
 			ghost->setStatus(Character::InSpawn);
+		}
+
+		// When ghost leaves the spawn, set status to "Scatter"
+		if (_map.isGateTile(pos.x, pos.y) && ghost->getStatus() == Character::Regular)
+		{
+			ghost->setStatus(Character::Scatter);
 		}
 	}
 		

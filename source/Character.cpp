@@ -143,7 +143,10 @@ bool Character::moveTowardsPoint(sf::Vector2f goal, sf::Time dt)
 		
 	sf::Vector2f direction = unitVector(goal - getPosition());
 	
-	move(direction * getMaxSpeed() * dt.asSeconds());
+	if(_status == Eaten)
+		move(direction * 10.f * getMaxSpeed() * dt.asSeconds());
+	else
+		move(direction * getMaxSpeed() * dt.asSeconds());
 	
 	if( abs( dot(direction, unitVector(goal - getPosition())) +1 ) < 0.1f )
 		setPosition(goal);
